@@ -3,8 +3,8 @@ import "./FreelancerRegister.css";
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import { useNavigate } from "react-router-dom"
 const poolData = {
-  UserPoolId: "eu-central-1_EHa67whej", // Replace with your UserPoolId
-  ClientId: "6m5ijktr8iamvkg81u41q2rbj1", // Replace with your ClientId
+  UserPoolId: process.env.REACT_APP_USER_POOL_ID_FREELANCER, // Hier aus der .env Datei
+ClientId: process.env.REACT_APP_CLIENT_ID_FREELANCER, // Hier aus der .env Datei
 };
 
 const userPool = new CognitoUserPool(poolData);
