@@ -217,6 +217,20 @@ const CompanyDashboard = () => {
                       <p>
                         <strong>Status:</strong> {applicant.status}
                       </p>
+                      <p>
+                        <strong>Skills:</strong> {applicant.skills}
+                      </p>
+                      <p>
+                        <strong>Message to Company:</strong> {applicant.message_to_company}
+                      </p>
+                      <p>
+  <strong>CV:</strong> 
+  {applicant.cv_url ? (
+    <a href={applicant.cv_url} target="_blank" rel="noopener noreferrer">View CV</a>
+  ) : (
+    <span>No CV available</span>  // Optionally show a message when no CV is available
+  )}
+</p>
                       {/* Show confirm button only if status is "awaiting" */}
                       {applicant.status === "awaiting" && (
                         <button

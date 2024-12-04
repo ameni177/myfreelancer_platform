@@ -3,16 +3,22 @@ import axios from "axios";
 import "./FreelancerDashboard.css";
 
 const FreelancerDashboard = () => {
-  const [projects, setProjects] = useState([]);  // For available projects
-  const [applyprojects, setApplyprojects] = useState([]);  // For freelancer's applied projects
+  const [projects, setProjects] = useState([]); // Available projects
+  const [applyprojects, setApplyprojects] = useState([]); // Freelancer's applied projects
   const [message, setMessage] = useState("");
   const freelancerName = localStorage.getItem("Name") || "Freelancer";
+
+  const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [skills, setSkills] = useState("");
+  const [messageToCompany, setMessageToCompany] = useState("");
+  const [cvFile, setCvFile] = useState(null);
+  const [showApplyModal, setShowApplyModal] = useState(false);
 
   useEffect(() => {
     fetchProjects();
   }, []);
 
-  // Fetch available projects from the server
+  // Fetch available projects
   const fetchProjects = async () => {
     try {
       const response = await axios.get("http://localhost:3001/projects");
@@ -22,11 +28,11 @@ const FreelancerDashboard = () => {
     }
   };
 
-  // Fetch applied projects for the current freelancer
+  // Fetch applied projects
   const fetchAppliedProjects = async () => {
     try {
       const response = await axios.get("http://localhost:3001/applications", {
-        params: { freelancerName }  // Pass freelancer name as query param
+        params: { freelancerName },
       });
       setApplyprojects(response.data);
     } catch (err) {
@@ -34,12 +40,27 @@ const FreelancerDashboard = () => {
     }
   };
 
-  // Handle apply button click for a project
-  const handleApply = async (projectId) => {
+  // Handle form submission for applying to a project
+  const handleApply = async () => {
+    if (!cvFile) {
+      setMessage("Please upload your CV.");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("projectId", selectedProjectId);
+    formData.append("freelancerName", freelancerName);
+    formData.append("skills", skills);
+    formData.append("messageToCompany", messageToCompany);
+    formData.append("cv", cvFile);
+
     try {
-      const response = await axios.post("http://localhost:3001/apply", { projectId, freelancerName });
-      setMessage(response.data.message); // Display message from the server
-      fetchAppliedProjects();  // Refresh the applied projects list
+      const response = await axios.post("http://localhost:3001/apply", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      setMessage(response.data.message);
+      setShowApplyModal(false); // Close the modal on success
+      fetchAppliedProjects(); // Refresh the applied projects list
     } catch (err) {
       setMessage("Error applying for the project");
       console.log(err);
@@ -68,7 +89,7 @@ const FreelancerDashboard = () => {
                     <p><strong>Skills:</strong> {project.skills}</p>
                     <p><strong>Deadline:</strong> {project.deadline}</p>
                     <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-                    <p><strong>Status:</strong> {project.status}</p> {/* Show status */}
+                    <p><strong>Status:</strong> {project.status}</p>
                   </div>
                 </li>
               ))
@@ -93,13 +114,52 @@ const FreelancerDashboard = () => {
                   <p><strong>Skills:</strong> {project.skills}</p>
                   <p><strong>Deadline:</strong> {project.deadline}</p>
                   <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-                  <button onClick={() => handleApply(project.id)}>Apply</button>
+                  <button
+                    onClick={() => {
+                      setSelectedProjectId(project.id);
+                      setShowApplyModal(true);
+                    }}
+                  >
+                    Apply
+                  </button>
                 </div>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      {/* Apply Modal */}
+      {showApplyModal && (
+        <div className="modal">
+          <div className="modal-content">
+            <h2>Apply for Project</h2>
+            <input
+              type="text"
+              placeholder="Skills"
+              value={skills}
+              onChange={(e) => setSkills(e.target.value)}
+            />
+            <textarea
+              placeholder="Message to the company"
+              value={messageToCompany}
+              onChange={(e) => setMessageToCompany(e.target.value)}
+            ></textarea>
+            <input
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => setCvFile(e.target.files[0])}
+            />
+            <button onClick={handleApply}>Submit Application</button>
+            <button
+              className="cancel-button"
+              onClick={() => setShowApplyModal(false)}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -1,14 +1,28 @@
 const express = require('express');
 const cors = require('cors');
-const mysql = require('mysql2'); // MySQL client
+const mysql = require('mysql2'); 
+const multer = require("multer");
+const AWS = require("aws-sdk");
+const path = require("path");
+const fs = require("fs");// MySQL client
 const app = express();
 const port = 3001;
+
 
 // Middleware for CORS (Cross-Origin Resource Sharing)
 app.use(cors());
 app.use(express.json());
 
 require('dotenv').config()
+const upload = multer({ dest: "uploads/" }); // Temp storage for uploaded files
+
+// Configure AWS S3
+const s3 = new AWS.S3({
+  accessKeyId: process.env.ACCESSKEYID,
+  secretAccessKey: process.env.SECRETACCESSKEYID ,
+  region: process.env.REGION,
+});
+
 
 // MySQL database connection
 const db = mysql.createConnection({
@@ -89,33 +103,60 @@ app.get('/applications', (req, res) => {
   });
 });
 
-// Endpoint to apply for a project
-app.post('/apply', (req, res) => {
-  const { projectId, freelancerName } = req.body;
 
-  if (!projectId || !freelancerName) {
-    return res.status(400).json({ message: 'Project ID and Freelancer Name are required' });
+// Endpoint to apply for a project
+app.post("/apply", upload.single("cv"), async (req, res) => {
+  const { projectId, freelancerName, skills, messageToCompany } = req.body;
+  const cvFile = req.file;
+
+  if (!projectId || !freelancerName || !cvFile) {
+    return res
+      .status(400)
+      .json({ message: "Project ID, Freelancer Name, and CV file are required" });
   }
 
-  // Example logic to record the application in the database
-  const query = 'INSERT INTO applications (project_id, freelancer_name) VALUES (?, ?)';
-  
-  db.execute(query, [projectId, freelancerName], (err, results) => {
-    if (err) {
-      console.error('Error applying for project:', err);
-      return res.status(500).json({ message: 'Error applying for project' });
-    }
-    
-    res.status(200).json({ message: 'Successfully applied for the project' });
-  });
-});
+  // Upload CV to S3 (without ACL since Bucket Owner Enforced is enabled)
+  const s3Params = {
+    Bucket: "freelancerbucketameni",
+    Key: `cv-files/${Date.now()}_${cvFile.originalname}`, // Unique file name in S3
+    Body: fs.createReadStream(cvFile.path),
+    ContentType: cvFile.mimetype,
+  };
 
+  try {
+    const s3Response = await s3.upload(s3Params).promise();
+    const cvUrl = s3Response.Location; // URL to access the uploaded file
+
+    // Save application details in the database
+    const query = `INSERT INTO applications (project_id, freelancer_name, cv_url, skills, message_to_company) 
+                   VALUES (?, ?, ?, ?, ?)`;
+
+    db.execute(
+      query,
+      [projectId, freelancerName, cvUrl, skills, messageToCompany],
+      (err, results) => {
+        if (err) {
+          console.error("Error applying for project:", err);
+          return res.status(500).json({ message: "Error applying for project" });
+        }
+
+        res.status(200).json({ message: "Successfully applied for the project" });
+      }
+    );
+  } catch (err) {
+    console.error("Error uploading CV to S3:", err);
+    res.status(500).json({ message: "Error uploading CV to S3" });
+  } finally {
+    // Clean up the temporary file stored locally
+    fs.unlinkSync(cvFile.path);
+  }
+});
 // Endpoint to get applicants for a specific project
 app.get('/applications/:projectId', (req, res) => {
   const projectId = req.params.projectId;
 
   const query = `
-    SELECT a.id, a.freelancer_name, a.status 
+    SELECT a.id, a.freelancer_name, a.status , a.skills, a.message_to_company, a.cv_url
     FROM applications a 
     WHERE a.project_id = ?`;
 
