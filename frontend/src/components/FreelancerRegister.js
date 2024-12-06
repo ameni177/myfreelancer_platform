@@ -1,28 +1,29 @@
 import React, { useState } from "react";
 import "./FreelancerRegister.css";
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
+
 const poolData = {
-  UserPoolId: process.env.REACT_APP_USER_POOL_ID_FREELANCER, // Hier aus der .env Datei
-ClientId: process.env.REACT_APP_CLIENT_ID_FREELANCER, // Hier aus der .env Datei
+  UserPoolId: process.env.REACT_APP_USER_POOL_ID_FREELANCER,
+  ClientId: process.env.REACT_APP_CLIENT_ID_FREELANCER,
 };
 
 const userPool = new CognitoUserPool(poolData);
 
 const FreelancerRegister = () => {
   const [activeTab, setActiveTab] = useState("register"); 
-  const navigate = useNavigate();// Tabs: 'register' or 'login'
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
     telephone: "",
-    confirmationCode: "", // Add confirmation code field
+    confirmationCode: "",
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [isRegistered, setIsRegistered] = useState(false); // Track registration state
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,27 +37,15 @@ const FreelancerRegister = () => {
     const { firstName, lastName, email, password, telephone } = formData;
 
     userPool.signUp(
-      email, // Username
-      password, // Password
+      email,
+      password,
       [
-        {
-          Name: "email",
-          Value: email,
-        },
-        {
-          Name: "given_name", // Custom attribute for first name
-          Value: firstName,
-        },
-        {
-          Name: "family_name", // Custom attribute for last name
-          Value: lastName,
-        },
-        {
-          Name: "phone_number", // Custom attribute for telephone number
-          Value: telephone,
-        },
+        { Name: "email", Value: email },
+        { Name: "given_name", Value: firstName },
+        { Name: "family_name", Value: lastName },
+        { Name: "phone_number", Value: telephone },
       ],
-      null, // Optional: Validation Data
+      null,
       (err, result) => {
         setLoading(false);
         if (err) {
@@ -64,10 +53,7 @@ const FreelancerRegister = () => {
           return;
         }
         setMessage("Registration successful! Please check your email for the confirmation code.");
-        setIsRegistered(true); // Set registration state to true
-        console.log("User registered successfully:", result.user.getUsername());
-        // Optionally clear the form
-        // setFormData({ firstName: "", lastName: "", email: "", password: "", telephone: "" });
+        setIsRegistered(true);
       }
     );
   };
@@ -78,24 +64,23 @@ const FreelancerRegister = () => {
     setMessage("");
 
     const { email, confirmationCode } = formData;
-
-    // Create the CognitoUser instance
     const cognitoUser = new CognitoUser({
       Username: email,
       Pool: userPool,
     });
 
-    // Confirm the registration with the code received
-    cognitoUser.confirmRegistration(confirmationCode, true, function (err, result) {
+    cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
       setLoading(false);
       if (err) {
         setMessage(`Error: ${err.message}`);
         return;
       }
       setMessage("Account confirmed successfully!");
-      console.log("Confirmation result:", result);
-      setFormData({ ...formData, confirmationCode: "" });
-      setIsRegistered(false); // Reset the registration state after confirmation
+      //setFormData({ ...formData, confirmationCode: "" });
+      localStorage.setItem("Name", formData.firstName)
+      navigate("/freelancer-dashboard");
+      setIsRegistered(false);
+    
     });
   };
 
@@ -105,7 +90,6 @@ const FreelancerRegister = () => {
     setMessage("");
 
     const { email, password } = formData;
-
     const authenticationDetails = new AuthenticationDetails({
       Username: email,
       Password: password,
@@ -127,17 +111,12 @@ const FreelancerRegister = () => {
             setMessage(`Error fetching user attributes: ${err.message}`);
             return;
           }
-  
-          // Find custom:companyName from the attributes
           const NameAttribute = attributes.find(attribute => attribute.Name === "given_name");
-          
           if (NameAttribute) {
-            // Store companyName in localStorage
             localStorage.setItem("Name", NameAttribute.Value);
           }
-        navigate("/freelancer-dashboard");  });
-        // Optionally, log the access token
-        // console.log("Access Token:", result.getAccessToken().getJwtToken());
+          navigate("/freelancer-dashboard");
+        });
       },
       onFailure: (err) => {
         setLoading(false);
@@ -148,6 +127,9 @@ const FreelancerRegister = () => {
 
   return (
     <div className="freelancer-register-container">
+      <h1>Welcome to Freelancer Portal</h1>
+      <p>Here you can register to become a freelancer or log in to your existing account.</p>
+      
       <div className="tabs-container">
         <button
           className={`tab ${activeTab === "register" ? "active-tab" : ""}`}
@@ -162,9 +144,22 @@ const FreelancerRegister = () => {
           Login
         </button>
       </div>
+
+      <div className="tabs-text">
+        {activeTab === "register" && !isRegistered && (
+          <p>Please fill out the registration form below to create your account.</p>
+        )}
+        {isRegistered && (
+          <p>We've sent a confirmation code to your email. Please enter it below.</p>
+        )}
+        {activeTab === "login" && (
+          <p>If you already have an account, enter your credentials to log in.</p>
+        )}
+      </div>
+
       <div className="tab-content">
         {message && <p className={`message ${message.startsWith("Error") ? "error" : ""}`}>{message}</p>}
-        
+
         {activeTab === "register" && !isRegistered && (
           <form className="form-container" onSubmit={handleRegister}>
             <h2>Register as a Freelancer</h2>

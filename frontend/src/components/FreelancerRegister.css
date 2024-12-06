@@ -1,65 +1,170 @@
-.freelancer-dashboard-container {
-  padding: 20px;
-  font-family: Arial, sans-serif;
+/* Freelancer Register CSS */
+.freelancer-register-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 40px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 h1 {
-  font-size: 2rem;
+  text-align: center;
+  font-size: 2.5rem;
   color: #333;
+  margin-bottom: 20px;
 }
 
 p {
-  font-size: 1.2rem;
+  text-align: center;
+  font-size: 1.1rem;
   color: #666;
+  margin-bottom: 30px;
 }
 
-.available-projects {
-  margin-top: 20px;
+.tabs-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
 }
 
-.available-projects h2 {
-  font-size: 1.5rem;
+.tab {
+  padding: 10px 20px;
+  font-size: 1.1rem;
+  background-color: #380729;
+  border: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  margin: 0 10px;
+  color: #000; /* Default color is black */
+}
+
+.tab:hover {
+  background-color: #230618;
+  color: white; /* Text color changes to white on hover */
+}
+
+.active-tab {
+  background-color: #28a745;
+  color: rgb(73, 6, 54); /* Text color is white when active */
+}
+
+.tabs-text {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.tab-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  font-size: 1.1rem;
+}
+
+label {
+  margin-bottom: 5px;
   color: #333;
 }
 
-.project-item {
-  background-color: #f9f9f9;
-  padding: 20px;
-  margin: 10px 0;
-  border-radius: 8px;
-  border: 1px solid #ddd;
-}
-
-.project-item h3 {
-  font-size: 1.3rem;
-  color: #000;
-}
-
-.project-item p {
+input {
+  padding: 12px;
   font-size: 1rem;
-  color: #555;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.project-item button {
-  padding: 10px 20px;
+input:focus {
+  border-color: #28a745;
+  outline: none;
+}
+
+button {
+  padding: 12px 20px;
   background-color: #28a745;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  font-size: 1rem;
-  margin-top: 10px;
+  font-size: 1.1rem;
+  transition: background-color 0.3s ease;
 }
 
-.project-item button:hover {
+button:hover {
   background-color: #218838;
+}
+
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
 }
 
 .message {
   margin-top: 20px;
-  padding: 10px;
-  background-color: #ffcc00;
-  color: #fff;
-  font-size: 1rem;
+  padding: 12px;
+  font-size: 1.1rem;
   text-align: center;
+  border-radius: 5px;
+}
+
+.message.error {
+  background-color: #f44336;
+  color: white;
+}
+
+.message:not(.error) {
+  background-color: #ffcc00;
+  color: white;
+}
+
+.submit-button {
+  width: 100%;
+  padding: 12px 0;
+  background-color: #28a745;
+  font-size: 1.2rem;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.submit-button:hover {
+  background-color: #218838;
+}
+
+.submit-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .freelancer-register-container {
+    padding: 20px;
+  }
+
+  .tabs-container {
+    flex-direction: column;
+  }
+
+  .tab {
+    margin-bottom: 10px;
+  }
 }

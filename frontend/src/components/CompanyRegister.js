@@ -1,28 +1,27 @@
 import React, { useState } from "react";
 import "./CompanyRegister.css";
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
-import { CognitoUserAttribute } from "amazon-cognito-identity-js";
-import { useNavigate } from "react-router-dom"
+import { useNavigate } from "react-router-dom";
 
 const poolData = {
-  UserPoolId: process.env.REACT_APP_USER_POOL_ID, // Hier aus der .env Datei
-  ClientId: process.env.REACT_APP_CLIENT_ID, // Hier aus der .env Datei
+  UserPoolId: process.env.REACT_APP_USER_POOL_ID, 
+  ClientId: process.env.REACT_APP_CLIENT_ID,
 };
 
 const userPool = new CognitoUserPool(poolData);
 
 const CompanyRegister = () => {
   const [activeTab, setActiveTab] = useState("register");
-  const navigate = useNavigate(); // Tabs: 'register' or 'login'
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     companyName: "",
     email: "",
     password: "",
-    confirmationCode: "", // Add confirmation code field
+    confirmationCode: "",
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
-  const [isRegistered, setIsRegistered] = useState(false); // Track registration state
+  const [isRegistered, setIsRegistered] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -36,19 +35,19 @@ const CompanyRegister = () => {
     const { companyName, email, password } = formData;
 
     userPool.signUp(
-      email, // Username
-      password, // Password
+      email,
+      password,
       [
         {
           Name: "email",
           Value: email,
         },
         {
-          Name: "custom:companyName", // Custom attribute for company name
+          Name: "custom:companyName",
           Value: companyName,
         },
       ],
-      null, // Optional: Validation Data
+      null,
       (err, result) => {
         setLoading(false);
         if (err) {
@@ -56,9 +55,7 @@ const CompanyRegister = () => {
           return;
         }
         setMessage("Registration successful! Please check your email for the confirmation code.");
-        setIsRegistered(true); // Set registration state to true
-        console.log("User registered successfully:", result.user.getUsername());
-        //setFormData({ companyName: "", email: "", password: "" });
+        setIsRegistered(true);
       }
     );
   };
@@ -70,13 +67,11 @@ const CompanyRegister = () => {
 
     const { email, confirmationCode } = formData;
 
-    // Create the CognitoUser instance
     const cognitoUser = new CognitoUser({
       Username: email,
       Pool: userPool,
     });
 
-    // Confirm the registration with the code received
     cognitoUser.confirmRegistration(confirmationCode, true, function (err, result) {
       setLoading(false);
       if (err) {
@@ -84,9 +79,8 @@ const CompanyRegister = () => {
         return;
       }
       setMessage("Account confirmed successfully!");
-      console.log("Confirmation result:", result);
       setFormData({ ...formData, confirmationCode: "" });
-      setIsRegistered(false); // Reset the registration state after confirmation
+      setIsRegistered(false);
     });
   };
 
@@ -111,26 +105,7 @@ const CompanyRegister = () => {
       onSuccess: (result) => {
         setLoading(false);
         setMessage("Login successful!");
-        alert("Login successful!");
-        //localStorage.setItem("companyName", cognitoUser.companyName.value);
-        cognitoUser.getUserAttributes((err, attributes) => {
-          if (err) {
-            setLoading(false);
-            setMessage(`Error fetching user attributes: ${err.message}`);
-            return;
-          }
-  
-          // Find custom:companyName from the attributes
-          const companyNameAttribute = attributes.find(attribute => attribute.Name === "custom:companyName");
-          
-          if (companyNameAttribute) {
-            // Store companyName in localStorage
-            localStorage.setItem("companyName", companyNameAttribute.Value);
-          }
-   
         navigate("/company-dashboard");
-       // console.log("Access Token:", result.getAccessToken().getJwtToken());
-      });
       },
       onFailure: (err) => {
         setLoading(false);
@@ -141,6 +116,9 @@ const CompanyRegister = () => {
 
   return (
     <div className="company-register-container">
+      <h1>Welcome to Company Registration</h1>
+      <p>Register or log in to manage your company profile.</p>
+
       <div className="tabs-container">
         <button
           className={`tab ${activeTab === "register" ? "active-tab" : ""}`}
@@ -155,8 +133,10 @@ const CompanyRegister = () => {
           Login
         </button>
       </div>
+
       <div className="tab-content">
         {message && <p className={`message ${message.startsWith("Error") ? "error" : ""}`}>{message}</p>}
+
         {activeTab === "register" && !isRegistered && (
           <form className="form-container" onSubmit={handleRegister}>
             <h2>Register Your Company</h2>
