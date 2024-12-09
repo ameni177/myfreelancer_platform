@@ -1,21 +1,13 @@
-## Multi Stage Build
 FROM node
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json .
 
 RUN npm install
 
 COPY . .
-# Pass environment variables during the build process
-
-
-RUN npm start
-#RUN npm run build
-
-#FROM nginx
-
-#COPY --from=build /app/build /usr/share/nginx/html
-
+# nicht technisch notwendig , Doku 
 EXPOSE 3000
+
+CMD ["npm", "start"]
