@@ -1,0 +1,40 @@
+---
+- name: Container auf der Maschine starten
+  hosts: all
+  become: yes #root-rechte zum installieren 
+  tasks:
+    - name: System updaten
+      yum:
+        update_cache: yes
+    
+    - name: Docker installieren
+      yum:
+        name: docker
+        state: present
+
+    - name: Starten und aktivieren von Docker
+      service:
+        name: docker
+        state: started
+        enabled: yes
+
+    - name: Add ec2-user to docker group
+      user:
+        name: ec2-user
+        groups: docker
+        append: true
+
+#    - name: Start Pizza-Backend Container
+ #     docker_container:
+   #     name: meinPizzaBackend
+    #    image: ameni1717/pizza-backend
+    #    state: started
+
+  #  - name: Start Pizza-Frontend Container
+  #    docker_container:
+   #     name: meinPizzaFrontend
+   #     image: suheib96/pizza-frontend
+   #     ports:
+   ##       - "80:80"
+ #       state: started
+    

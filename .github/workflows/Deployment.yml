@@ -1,0 +1,106 @@
+name: Deployment Worfklow
+
+on: [push, workflow_dispatch]
+
+jobs:
+  apply:
+    name: Terraform apply
+    runs-on: ubuntu-latest #runner
+    if: github.event_name == 'push'
+
+    steps:
+      
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: eu-central-1
+    
+    #   - name: Change Directory
+    #     run: cd terraform 
+       # Docker Build and Push for Frontend
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+         username: ${{ secrets.DOCKER_USERNAME }}
+         password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build Frontend Docker Image
+        working-directory: ./frontend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/projectfrontend:latest .
+
+      - name: Push Frontend Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/projectfrontend:latest
+
+     # Docker Build and Push for Backend
+      - name: Build Backend Docker Image
+        working-directory: ./backend
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/projectbackend:latest .
+
+      - name: Push Backend Docker Image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/projectbackend:latest
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./terraform
+        run: terraform apply -auto-approve
+
+      - name: Ansible installieren
+        run: sudo apt-get install -y ansible
+
+      - name: Generiere Ansible Inventory
+        working-directory: ./terraform
+        run: |
+          echo "[webserver]" > ../ansible/ec2Maschinen.ini
+          terraform output -json >> meineOutputs.json
+          jq -r ".instance_public_ips.value[]" meineOutputs.json >> ../ansible/ec2Maschinen.ini
+
+      - name: Copy SSH Key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/terraformKey.pem
+          chmod 600 ~/.ssh/terraformKey.pem
+
+      - name: Ansible Playbook ausführen
+        working-directory: ./ansible
+        run: ansible-playbook -i ec2Maschinen.ini meinPlaybook.yml
+
+    
+
+  destroy:
+    name: Terraform destroy
+    runs-on: ubuntu-latest #runner
+    if: github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{secrets.AWS_ACCESS_KEY_ID}}
+          aws-secret-access-key: ${{secrets.AWS_SECRET_ACCESS_KEY}}
+          aws-region: eu-central-1
+
+      - name: Terraform Init
+        working-directory: ./terraform
+        run: terraform init
+
+      - name: Terraform Destroy
+        working-directory: ./terraform
+        run: terraform destroy -auto-approve
