@@ -32,13 +32,14 @@
           - "3001:3001"
         state: started
         env:
-          host: "{{ DB_HOST }}"
-          user: "{{ DB_USER }}"
-          password: "{{ DB_PASSWORD }}"
-          database: "{{ DB_NAME }}"
-          accessKeyId: "{{ AWS_ACCESS_KEY_ID }}"
-          secretAccessKey: "{{ AWS_SECRET_ACCESS_KEY }}"
-          region: "{{ REGION }}"
+          DB_HOST: "{{ DB_HOST }}"
+          DB_USER: "{{ DB_USER }}"
+          DB_PASSWORD: "{{ DB_PASSWORD }}"
+          DB_NAME: "{{ DB_NAME }}"
+          ACCESSKEYID: "{{ AWS_ACCESS_KEY_ID }}"
+          SECRETACCESSKEYID: "{{ AWS_SECRET_ACCESS_KEY }}"
+          REGION: "{{ REGION }}"
+       
 
     - name: Start Frontend Container
       docker_container:
@@ -48,7 +49,7 @@
           - "80:80"
         state: started
         env:
-          UserPoolIdcomp: "{{ REACT_APP_USER_POOL_ID }}"
-          ClientIdcomp: "{{ REACT_APP_CLIENT_ID }}"
-          UserPoolId : "{{ REACT_APP_USER_POOL_ID_FREELANCER }}"
-          ClientId: "{{ REACT_APP_CLIENT_ID_FREELANCER }}"
+          REACT_APP_USER_POOL_ID: "{{ REACT_APP_USER_POOL_ID }}"
+          REACT_APP_CLIENT_I: "{{ REACT_APP_CLIENT_ID }}"
+          REACT_APP_USER_POOL_ID_FREELANCER : "{{ REACT_APP_USER_POOL_ID_FREELANCER }}"
+          REACT_APP_CLIENT_ID_FREELANCER: "{{ REACT_APP_CLIENT_ID_FREELANCER }}"
