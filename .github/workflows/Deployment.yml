@@ -49,18 +49,18 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USERNAME }}/projectbackend:latest
 
       - name: Terraform Init
-        working-directory: ./terraform
+        working-directory: ./Terraform
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: ./terraform
+        working-directory: ./Terraform
         run: terraform apply -auto-approve
 
       - name: Ansible installieren
         run: sudo apt-get install -y ansible
 
       - name: Generiere Ansible Inventory
-        working-directory: ./terraform
+        working-directory: ./Terraform
         run: |
           echo "[webserver]" > ../ansible/ec2Maschinen.ini
           terraform output -json >> meineOutputs.json
@@ -98,9 +98,9 @@ jobs:
           aws-region: eu-central-1
 
       - name: Terraform Init
-        working-directory: ./terraform
+        working-directory: ./Terraform
         run: terraform init
 
       - name: Terraform Destroy
-        working-directory: ./terraform
+        working-directory: ./Terraform
         run: terraform destroy -auto-approve
