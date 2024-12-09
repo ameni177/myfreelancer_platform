@@ -4,8 +4,8 @@ import { CognitoUserPool, CognitoUser, AuthenticationDetails } from "amazon-cogn
 import { useNavigate } from "react-router-dom";
 
 const poolData = {
-  UserPoolId: process.env.REACT_APP_USER_POOL_ID, 
-  ClientId: process.env.REACT_APP_CLIENT_ID,
+  UserPoolIdcomp: process.env.REACT_APP_USER_POOL_ID, 
+  ClientIdcomp: process.env.REACT_APP_CLIENT_ID,
 };
 
 const userPool = new CognitoUserPool(poolData);
