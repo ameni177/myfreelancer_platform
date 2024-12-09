@@ -1,5 +1,5 @@
 ## Multi Stage Build
-FROM node AS build
+FROM node
 
 WORKDIR /app
 
