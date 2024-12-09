@@ -35,7 +35,7 @@ jobs:
 
       - name: Build Frontend Docker Image
         working-directory: ./frontend
-        run: docker build --build-arg REACT_APP_USER_POOL_ID=${{ secrets.REACT_APP_USER_POOL_ID }} --build-arg REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} --build-arg REACT_APP_USER_POOL_ID_FREELANCER=${{ secrets.REACT_APP_USER_POOL_ID_FREELANCER }} --build-arg REACT_APP_CLIENT_ID_FREELANCER=${{ secrets.REACT_APP_CLIENT_ID_FREELANCER }} -t ${{ secrets.DOCKER_USERNAME }}/projectfrontend:latest .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/projectfrontend:latest .
 
 
       - name: Push Frontend Docker Image

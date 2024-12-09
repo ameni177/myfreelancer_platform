@@ -9,14 +9,13 @@ RUN npm install
 
 COPY . .
 # Pass environment variables during the build process
-ARG REACT_APP_USER_POOL_ID
-ARG REACT_APP_CLIENT_ID
-ARG REACT_APP_USER_POOL_ID_FREELANCER
-ARG REACT_APP_CLIENT_ID_FREELANCER
-RUN npm run build
 
-FROM nginx
 
-COPY --from=build /app/build /usr/share/nginx/html
+RUN npm start
+#RUN npm run build
 
-EXPOSE 80
+#FROM nginx
+
+#COPY --from=build /app/build /usr/share/nginx/html
+
+EXPOSE 3000
