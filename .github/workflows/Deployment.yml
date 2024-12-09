@@ -45,7 +45,7 @@ jobs:
         working-directory: ./backend
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/projectbackend:latest .
 
-      - name: Push Backend Docker Image
+      - name: Push Backend Docker Imagee
         run: docker push ${{ secrets.DOCKER_USERNAME }}/projectbackend:latest
 
       - name: Terraform Init
