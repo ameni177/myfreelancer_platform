@@ -72,22 +72,9 @@ jobs:
           echo "${{ secrets.AWS_SSH_KEY }}" > ~/.ssh/terraformKey.pem
           chmod 600 ~/.ssh/terraformKey.pem
 
-      - name: Run Ansible Playbook
+      - name: Ansible Playbook ausführen
         working-directory: ./ansible
-        run: |
-            ansible-playbook -i ec2Maschinen.ini meinPlaybook.yml \
-              --extra-vars "DB_HOST=${{ secrets.DB_HOST }} \
-                            DB_USER=${{ secrets.DB_USER }} \
-                            DB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-                            DB_NAME=${{ secrets.DB_NAME }} \
-                            AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} \
-                            AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} \
-                            REGION=${{ secrets.REGION }} \
-                            REACT_APP_USER_POOL_ID=${{ secrets.REACT_APP_USER_POOL_ID }} \
-                            REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} \
-                            REACT_APP_USER_POOL_ID_FREELANCER=${{ secrets.REACT_APP_USER_POOL_ID_FREELANCER }} \
-                            REACT_APP_CLIENT_ID_FREELANCER=${{ secrets.REACT_APP_CLIENT_ID_FREELANCER }}"
-  
+        run: ansible-playbook -i ec2Maschinen.ini meinPlaybook.yml
 
     
 
