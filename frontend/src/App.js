@@ -8,6 +8,7 @@ import AboutPage from "./components/AboutPage";
 import ContactPage from ".//components/ContactPage";
 import CompanyDashboard from "./components/CompanyDashboard";
 import FreelancerDashboard from "./components/FreelancerDashboard";
+import ProjectDetails from "./components/ProjectDetails";
 
 const App = () => {
   return (
@@ -21,6 +22,7 @@ const App = () => {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/company-dashboard" element={<CompanyDashboard />} />
         <Route path="/freelancer-dashboard" element={< FreelancerDashboard/>} />
+        <Route path="/projects/:projectId" element={<ProjectDetails />} />
       </Routes>
     </Router>
   );

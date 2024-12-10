@@ -21,7 +21,7 @@ const FreelancerDashboard = () => {
   // Fetch available projects
   const fetchProjects = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/projects");
+      const response = await axios.get("http://localhost:3001/projectsfreelancer");
       setProjects(response.data);
     } catch (err) {
       console.log(err);
@@ -85,6 +85,7 @@ const FreelancerDashboard = () => {
                 <li key={project.id} className="project-item">
                   <div className="project-overview">
                     <h3>{project.name}</h3>
+                    <p><strong>Company:</strong> {project.companyname}</p>
                     <p><strong>Description:</strong> {project.description}</p>
                     <p><strong>Skills:</strong> {project.skills}</p>
                     <p><strong>Deadline:</strong> {project.deadline}</p>
@@ -110,6 +111,7 @@ const FreelancerDashboard = () => {
               <li key={project.id} className="project-item">
                 <div className="project-overview">
                   <h3>{project.name}</h3>
+                  <p><strong>Company:</strong> {project.companyname}</p>
                   <p><strong>Description:</strong> {project.description}</p>
                   <p><strong>Skills:</strong> {project.skills}</p>
                   <p><strong>Deadline:</strong> {project.deadline}</p>

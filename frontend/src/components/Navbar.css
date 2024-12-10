@@ -1,36 +1,66 @@
 .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    background: linear-gradient(to right, #4e54c8, #8f94fb);
-    color: white;
-    font-family: Arial, sans-serif;
-  }
-  
-  .navbar-logo a {
-    text-decoration: none;
-    font-size: 24px;
-    font-weight: bold;
-    color: white;
-  }
-  
-  .navbar-links {
-    list-style: none;
-    display: flex;
-    gap: 15px;
-    margin: 0;
-    padding: 0;
-  }
-  
-  .navbar-links li a {
-    text-decoration: none;
-    color: white;
-    font-size: 18px;
-    transition: color 0.3s;
-  }
-  
-  .navbar-links li a:hover {
-    color: #feb47b;
-  }
-  
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #4e54c8, #8f94fb);
+  color: white;
+  font-family: Arial, sans-serif;
+}
+
+.navbar-logo a {
+  text-decoration: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.navbar-links {
+  list-style: none;
+  display: flex;
+  gap: 15px;
+  margin: 0;
+  padding: 0;
+  align-items: center; /* Vertikale Ausrichtung sicherstellen */
+}
+
+.navbar-links li {
+  display: flex;
+  align-items: center; /* Innerhalb der einzelnen `li` vertikal ausrichten */
+}
+
+.navbar-links li a {
+  text-decoration: none;
+  color: white;
+  font-size: 18px;
+  transition: color 0.3s;
+}
+
+.navbar-links li a:hover {
+  color: #feb47b;
+}
+
+/* Styling für den Logout-Button */
+.logout-button {
+  background: #feb47b; /* Warme Farbe für den Button */
+  color: white;
+  border: none;
+  padding: 8px 16px; /* Mehr horizontale Polsterung für ein ausgeglichenes Layout */
+  font-size: 16px;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background: #ff7e5f; /* Etwas dunklerer Farbton beim Hover */
+  transform: scale(1.1); /* Vergrößert den Button leicht */
+  color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Abstand zwischen dem Button und den anderen Links reduzieren */
+.navbar-links li .logout-button {
+  margin-left: 15px; /* Gleicher Abstand wie zwischen anderen Links */
+}

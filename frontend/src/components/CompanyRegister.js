@@ -104,8 +104,21 @@ const CompanyRegister = () => {
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (result) => {
         setLoading(false);
+        
         setMessage("Login successful!");
-        navigate("/company-dashboard");
+        cognitoUser.getUserAttributes((err, attributes) => {
+          if (err) {
+            setLoading(false);
+            setMessage(`Error fetching user attributes: ${err.message}`);
+            return;
+          }
+          const NameAttribute = attributes.find(attribute => attribute.Name === "custom:companyName");
+          if (NameAttribute) {
+            localStorage.setItem("Name", NameAttribute.Value);
+          }
+          localStorage.setItem("isAuthenticated", "true");
+          localStorage.setItem("userRole", "company");
+        navigate("/company-dashboard");  });
       },
       onFailure: (err) => {
         setLoading(false);

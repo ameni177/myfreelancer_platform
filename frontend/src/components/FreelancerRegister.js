@@ -115,6 +115,8 @@ const FreelancerRegister = () => {
           if (NameAttribute) {
             localStorage.setItem("Name", NameAttribute.Value);
           }
+          localStorage.setItem("isAuthenticated", "true");
+          localStorage.setItem("userRole", "freeancer");
           navigate("/freelancer-dashboard");
         });
       },

@@ -43,6 +43,24 @@ db.connect((err) => {
 
 // API endpoint to get data from the database by ID
 app.get('/projects', (req, res) => {
+  const companyName = req.query.companyName; // Use companyName instead of companyId
+
+  if (!companyName) {
+    return res.status(400).json({ message: 'Company Name is required' });
+  }
+
+  const query = 'SELECT * FROM project WHERE companyName = ?';
+
+  db.execute(query, [companyName], (err, results) => {
+    if (err) {
+      console.error('Error fetching data from database:', err.stack);
+      return res.status(500).json({ message: 'Error fetching data from the database' });
+    }
+
+    return res.json(results);
+  });
+});
+app.get('/projectsfreelancer', (req, res) => {
   // SQL query to fetch all rows from "project" table
   const query = 'SELECT * FROM project';
 
@@ -60,32 +78,48 @@ app.get('/projects', (req, res) => {
   });
 });
 
-app.post('/projects', (req, res) => {
-  const { name, description, deadline, skills, budget } = req.body;
+app.get('/projects/:id', (req, res) => {
+  const projectId = req.params.id;
 
-  // Validate the input
-  if (!name || !description || !deadline || !skills || !budget) {
+  const query = 'SELECT * FROM project WHERE id = ?';
+
+  db.execute(query, [projectId], (err, results) => {
+    if (err) {
+      console.error('Error fetching project by ID:', err.stack);
+      return res.status(500).json({ message: 'Error fetching project' });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    return res.json(results[0]); // Return the first project (assuming ID is unique)
+  });
+});
+
+app.post('/projects', (req, res) => {
+  const { name, description, deadline, skills, budget, companyName } = req.body; // Added companyName here
+
+  if (!name || !description || !deadline || !skills || !budget || !companyName) {
     return res.status(400).json({ message: 'All fields are required.' });
   }
 
-  // SQL query to insert a new project into the "project" table
-  const query = `INSERT INTO project (name, description, deadline, skills, budget)
-                 VALUES (?, ?, ?, ?, ?)`;
+  const query = `INSERT INTO project (name, description, deadline, skills, budget, companyName)
+                 VALUES (?, ?, ?, ?, ?, ?)`;
 
-  // Run the query with the provided values
-  db.execute(query, [name, description, deadline, skills, budget], (err, results) => {
+  db.execute(query, [name, description, deadline, skills, budget, companyName], (err, results) => {
     if (err) {
       console.error('Error inserting data into the database:', err.stack);
       return res.status(500).json({ message: 'Error inserting data into the database' });
     }
 
-    // Send success message and the new project ID
     return res.status(201).json({
       message: 'Project created successfully!',
-      projectId: results.insertId, // The ID of the newly inserted project
+      projectId: results.insertId,
     });
   });
 });
+
 
 
 // API endpoint to get applied projects for a specific freelancer
