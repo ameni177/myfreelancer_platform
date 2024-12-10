@@ -9,7 +9,7 @@ resource "aws_instance" "GithubActionsInstanz" {
   key_name               = "terraformKey" ## euer eigener Key hier hinzufügen
   vpc_security_group_ids = [aws_security_group.ssh_access.id]
   tags = {
-    Name = "Meine Github Actions Instanz ${count.index}"
+    Name = "Meine Github Actions Instanz 1"
   }
 }
 
