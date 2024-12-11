@@ -1,17 +1,13 @@
-## Multi Stage Build
-FROM node AS build
+FROM node
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json .
 
 RUN npm install
 
 COPY . .
-RUN npm run build
+# nicht technisch notwendig , Doku 
+EXPOSE 3000
 
-FROM nginx
-
-COPY --from=build /app/build /usr/share/nginx/html
-
-EXPOSE 80
+CMD ["npm", "start"]
