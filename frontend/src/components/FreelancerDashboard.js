@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // Import navigation hook
 import axios from "axios";
 import "./FreelancerDashboard.css";
 
 const FreelancerDashboard = () => {
-  const [projects, setProjects] = useState([]); // Available projects
-  const [applyprojects, setApplyprojects] = useState([]); // Freelancer's applied projects
+  const [projects, setProjects] = useState([]); // All available projects
+  const [applyProjects, setApplyProjects] = useState([]); // Freelancer's applied projects
+  const [filteredProjects, setFilteredProjects] = useState([]); // Available projects the freelancer hasn't applied for
   const [message, setMessage] = useState("");
   const freelancerName = localStorage.getItem("Name") || "Freelancer";
 
@@ -14,30 +16,39 @@ const FreelancerDashboard = () => {
   const [cvFile, setCvFile] = useState(null);
   const [showApplyModal, setShowApplyModal] = useState(false);
 
+  const navigate = useNavigate();
+  const backendUrl = process.env.REACT_APP_BACKEND_URL; // Hook for navigation
+
+  // Fetch data when the page loads
   useEffect(() => {
-    fetchProjects();
+    fetchData();
   }, []);
 
-  // Fetch available projects
-  const fetchProjects = async () => {
+  // Fetch both available and applied projects
+  const fetchData = async () => {
     try {
-      const response = await axios.get("http://localhost:3001/projectsfreelancer");
-      setProjects(response.data);
+      const [availableRes, appliedRes] = await Promise.all([
+        axios.get(`http://${backendUrl}:3001/projectsfreelancer`), // Fetch all available projects
+        axios.get(`http://${backendUrl}:3001/applications`, {
+          params: { freelancerName },
+        }), // Fetch projects the freelancer has applied for
+      ]);
+
+      setProjects(availableRes.data);
+      setApplyProjects(appliedRes.data);
+
+      // Filter projects to exclude applied ones
+      const appliedIds = new Set(appliedRes.data.map((p) => p.id));
+      const filtered = availableRes.data.filter((project) => !appliedIds.has(project.id));
+      setFilteredProjects(filtered);
     } catch (err) {
-      console.log(err);
+      console.error("Error fetching data:", err);
     }
   };
 
-  // Fetch applied projects
-  const fetchAppliedProjects = async () => {
-    try {
-      const response = await axios.get("http://localhost:3001/applications", {
-        params: { freelancerName },
-      });
-      setApplyprojects(response.data);
-    } catch (err) {
-      console.log(err);
-    }
+  // Handle navigation to the project details page
+  const handleStartWorking = (projectId) => {
+    navigate(`/project-details/${projectId}`);
   };
 
   // Handle form submission for applying to a project
@@ -55,81 +66,96 @@ const FreelancerDashboard = () => {
     formData.append("cv", cvFile);
 
     try {
-      const response = await axios.post("http://localhost:3001/apply", formData, {
+      const response = await axios.post(`http://${backendUrl}:3001/apply`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       setMessage(response.data.message);
-      setShowApplyModal(false); // Close the modal on success
-      fetchAppliedProjects(); // Refresh the applied projects list
+      setShowApplyModal(false);
+      fetchData(); // Refresh data after successful application
     } catch (err) {
       setMessage("Error applying for the project");
-      console.log(err);
+      console.error("Error:", err);
+    }
+  };
+
+  // Function to get the status class
+  const getStatusClass = (status) => {
+    if (status === "confirmed") {
+      return "status confirmed"; // Green for confirmed status
+    } else if (status === "awaiting") {
+      return "status waiting"; // Yellow for waiting status
+    } else {
+      return "status"; // Default class for other statuses
     }
   };
 
   return (
-    <div className="freelancer-dashboard-container">
-      <h1>Welcome to your Freelancer Dashboard, {freelancerName}!</h1>
-      <p>Here you can view available projects and apply to them.</p>
+    <div className="dashboard-container">
+      <header>
+        <h1>Welcome, {freelancerName}!</h1>
+        <p>Manage your projects and find new opportunities.</p>
+      </header>
 
-      {/* MY PROJECTS Section */}
-      <div>
+      {/* Applied Projects Section */}
+      <section className="applied-projects">
         <h2>My Applied Projects</h2>
-        <button onClick={fetchAppliedProjects}>Show My Projects</button>
-        <div>
-          <ul>
-            {applyprojects.length === 0 ? (
-              <p>No applied projects found.</p>
-            ) : (
-              applyprojects.map((project) => (
-                <li key={project.id} className="project-item">
-                  <div className="project-overview">
-                    <h3>{project.name}</h3>
-                    <p><strong>Company:</strong> {project.companyname}</p>
-                    <p><strong>Description:</strong> {project.description}</p>
-                    <p><strong>Skills:</strong> {project.skills}</p>
-                    <p><strong>Deadline:</strong> {project.deadline}</p>
-                    <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-                    <p><strong>Status:</strong> {project.status}</p>
-                  </div>
-                </li>
-              ))
-            )}
-          </ul>
-        </div>
-      </div>
+        <ul>
+          {applyProjects.length === 0 ? (
+            <p>No applied projects found.</p>
+          ) : (
+            applyProjects.map((project) => (
+              <li key={project.id} className="project-item">
+                <h3>{project.name}</h3>
+                <p><strong>Company:</strong> {project.companyname}</p>
+                <p><strong>Description:</strong> {project.description}</p>
+                <p><strong>Skills:</strong> {project.skills}</p>
+                <p><strong>Deadline:</strong> {project.deadline}</p>
+                <p><strong>Budget/Hour:</strong> ${project.budget}</p>
+                <p>
+                  <strong>Status:</strong> 
+                  <span className={getStatusClass(project.status)}>{project.status}</span>
+                </p>
+                {project.status === "confirmed" && (
+                  <button className="start-button" onClick={() => handleStartWorking(project.id)}>
+                    Start Working
+                  </button>
+                )}
+              </li>
+            ))
+          )}
+        </ul>
+      </section>
 
       {/* Available Projects Section */}
-      {message && <p className="message">{message}</p>}
-      <div className="available-projects">
+      <section className="available-projects">
         <h2>Available Projects</h2>
-        {projects.length === 0 ? (
-          <p>No projects available at the moment. Please check back later.</p>
-        ) : (
-          <ul>
-            {projects.map((project) => (
+        {message && <p className="message">{message}</p>}
+        <ul>
+          {filteredProjects.length === 0 ? (
+            <p>No projects available. Check back later.</p>
+          ) : (
+            filteredProjects.map((project) => (
               <li key={project.id} className="project-item">
-                <div className="project-overview">
-                  <h3>{project.name}</h3>
-                  <p><strong>Company:</strong> {project.companyname}</p>
-                  <p><strong>Description:</strong> {project.description}</p>
-                  <p><strong>Skills:</strong> {project.skills}</p>
-                  <p><strong>Deadline:</strong> {project.deadline}</p>
-                  <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-                  <button
-                    onClick={() => {
-                      setSelectedProjectId(project.id);
-                      setShowApplyModal(true);
-                    }}
-                  >
-                    Apply
-                  </button>
-                </div>
+                <h3>{project.name}</h3>
+                <p><strong>Company:</strong> {project.companyname}</p>
+                <p><strong>Description:</strong> {project.description}</p>
+                <p><strong>Skills:</strong> {project.skills}</p>
+                <p><strong>Deadline:</strong> {project.deadline}</p>
+                <p><strong>Budget/Hour:</strong> ${project.budget}</p>
+                
+                <button
+                  onClick={() => {
+                    setSelectedProjectId(project.id);
+                    setShowApplyModal(true);
+                  }}
+                >
+                  Apply
+                </button>
               </li>
-            ))}
-          </ul>
-        )}
-      </div>
+            ))
+          )}
+        </ul>
+      </section>
 
       {/* Apply Modal */}
       {showApplyModal && (
@@ -138,7 +164,7 @@ const FreelancerDashboard = () => {
             <h2>Apply for Project</h2>
             <input
               type="text"
-              placeholder="Skills"
+              placeholder="Your Skills"
               value={skills}
               onChange={(e) => setSkills(e.target.value)}
             />
@@ -146,19 +172,18 @@ const FreelancerDashboard = () => {
               placeholder="Message to the company"
               value={messageToCompany}
               onChange={(e) => setMessageToCompany(e.target.value)}
-            ></textarea>
+            />
             <input
               type="file"
               accept=".pdf,.doc,.docx"
               onChange={(e) => setCvFile(e.target.files[0])}
             />
-            <button onClick={handleApply}>Submit Application</button>
-            <button
-              className="cancel-button"
-              onClick={() => setShowApplyModal(false)}
-            >
-              Cancel
-            </button>
+            <div className="modal-actions">
+              <button onClick={handleApply}>Submit</button>
+              <button className="cancel-button" onClick={() => setShowApplyModal(false)}>
+                Cancel
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -217,6 +217,31 @@ app.put('/applications/confirm/:applicationId', (req, res) => {
     res.json({ message: 'Applicant confirmed successfully!' });
   });
 });
+// Endpoint to update the progress of a project
+app.put('/projects/:id/progress', (req, res) => {
+  const projectId = req.params.id;
+  const { progress } = req.body; // Get progress from the request body
+
+  if (progress === undefined) {
+    return res.status(400).json({ message: "Progress value is required" });
+  }
+
+  // Update project progress in the database
+  const query = 'UPDATE project SET progress = ? WHERE id = ?';
+
+  db.execute(query, [progress, projectId], (err, results) => {
+    if (err) {
+      console.error('Error updating progress:', err.stack);
+      return res.status(500).json({ message: 'Error updating progress' });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Project not found' });
+    }
+
+    return res.json({ message: 'Progress updated successfully!' });
+  });
+});
 
 
 // Start the server

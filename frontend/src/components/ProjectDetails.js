@@ -10,6 +10,8 @@ const ProjectDetails = () => {
   const [message, setMessage] = useState("");
   const navigate = useNavigate(); // Initialisiere navigate
 
+  const backendUrl = process.env.REACT_APP_BACKEND_URL; // Get backend URL from environment variables
+
   useEffect(() => {
     fetchProjectDetails();
     fetchApplicants();
@@ -17,7 +19,7 @@ const ProjectDetails = () => {
 
   const fetchProjectDetails = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/projects/${projectId}`);
+      const response = await axios.get(`http://${backendUrl}:3001/projects/${projectId}`);
       setProject(response.data);
     } catch (err) {
       console.error("Error fetching project details:", err);
@@ -26,7 +28,7 @@ const ProjectDetails = () => {
 
   const fetchApplicants = async () => {
     try {
-      const response = await axios.get(`http://localhost:3001/applications/${projectId}`);
+      const response = await axios.get(`http://${backendUrl}:3001/applications/${projectId}`);
       setApplicants(response.data);
     } catch (err) {
       console.error("Error fetching applicants:", err);
@@ -39,7 +41,7 @@ const ProjectDetails = () => {
 
   const handleConfirmApplicant = async (applicationId) => {
     try {
-      const response = await axios.put(`http://localhost:3001/applications/confirm/${applicationId}`);
+      const response = await axios.put(`http://${backendUrl}:3001/applications/confirm/${applicationId}`);
       setMessage("Applicant confirmed successfully!");
       fetchApplicants();
     } catch (err) {
@@ -73,14 +75,16 @@ const ProjectDetails = () => {
                   <p><strong>Skills:</strong> {applicant.skills}</p>
                   <p><strong>Message to Company:</strong> {applicant.message_to_company}</p>
                   <p><strong>CV:</strong> {applicant.cv_url ? (
-  <a href={applicant.cv_url} target="_blank" rel="noopener noreferrer">View CV</a>
-) : (
-  <span>No CV available</span>
-)}</p>
-                
-                 {applicant.status!=="confirmed" && <button onClick={() => handleConfirmApplicant(applicant.id)}>
-                    Confirm Applicant
-                  </button> }
+                    <a href={applicant.cv_url} target="_blank" rel="noopener noreferrer">View CV</a>
+                  ) : (
+                    <span>No CV available</span>
+                  )}</p>
+
+                  {applicant.status !== "confirmed" && (
+                    <button onClick={() => handleConfirmApplicant(applicant.id)}>
+                      Confirm Applicant
+                    </button>
+                  )}
                 </li>
               ))}
             </ul>

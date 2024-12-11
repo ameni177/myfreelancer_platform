@@ -9,7 +9,7 @@ import ContactPage from ".//components/ContactPage";
 import CompanyDashboard from "./components/CompanyDashboard";
 import FreelancerDashboard from "./components/FreelancerDashboard";
 import ProjectDetails from "./components/ProjectDetails";
-
+import ProjectfreelancerDetails from "./components/projectfreelancerdetails";
 const App = () => {
   return (
     <Router>
@@ -23,6 +23,7 @@ const App = () => {
         <Route path="/company-dashboard" element={<CompanyDashboard />} />
         <Route path="/freelancer-dashboard" element={< FreelancerDashboard/>} />
         <Route path="/projects/:projectId" element={<ProjectDetails />} />
+        <Route path="/project-details/:projectId" element={<ProjectfreelancerDetails />} />
       </Routes>
     </Router>
   );

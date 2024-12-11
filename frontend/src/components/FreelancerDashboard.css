@@ -1,37 +1,52 @@
-.freelancer-dashboard-container {
-  padding: 20px;
+body {
   font-family: Arial, sans-serif;
+  background-color: #f4f4f9;
+  margin: 0;
+  padding: 0;
 }
 
-h1 {
-  font-size: 2rem;
+.dashboard-container {
+  padding: 20px;
+}
+
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 2.5rem;
   color: #333;
 }
 
-p {
+header p {
   font-size: 1.2rem;
   color: #666;
 }
 
-.available-projects {
-  margin-top: 20px;
+section {
+  margin-bottom: 40px;
 }
 
-.available-projects h2 {
-  font-size: 1.5rem;
+h2 {
+  font-size: 1.8rem;
   color: #333;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 5px;
+  margin-bottom: 15px;
 }
 
 .project-item {
-  background-color: #f9f9f9;
-  padding: 20px;
-  margin: 10px 0;
-  border-radius: 8px;
+  background: #fff;
   border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .project-item h3 {
-  font-size: 1.3rem;
+  font-size: 1.4rem;
   color: #000;
 }
 
@@ -40,84 +55,91 @@ p {
   color: #555;
 }
 
-.project-item button {
+button {
   padding: 10px 20px;
-  background-color: #28a745;
-  color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1rem;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+.refresh-button {
+  background-color: #007bff;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.project-item button {
+  background-color: #28a745;
+  color: #fff;
   margin-top: 10px;
 }
 
-.project-item button:hover {
-  background-color: #218838;
-}
-
-.message {
-  margin-top: 20px;
-  padding: 10px;
-  background-color: #ffcc00;
+.start-button {
+  background-color: #007bff;
   color: #fff;
-  font-size: 1rem;
-  text-align: center;
+  margin-top: 10px;
 }
 
-/* Modal container */
 .modal {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5); /* Dim background */
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1000; /* Ensure it appears above other elements */
 }
 
-/* Modal content */
 .modal-content {
-  background-color: #fff;
+  background: #fff;
   padding: 20px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  width: 400px; /* Set a fixed width for the modal */
-  max-width: 90%; /* Ensure it doesn't overflow on smaller screens */
+  width: 400px;
   text-align: center;
 }
 
 .modal-content input,
 .modal-content textarea {
   width: 100%;
-  padding: 10px;
   margin: 10px 0;
+  padding: 10px;
   border: 1px solid #ddd;
   border-radius: 5px;
-  font-size: 1rem;
 }
 
-.modal-content button {
-  padding: 10px 20px;
-  margin: 10px 5px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1rem;
+.modal-actions {
+  margin-top: 10px;
 }
 
-.modal-content button:hover {
-  background-color: #0056b3;
+.modal-actions button {
+  margin: 5px;
 }
 
-.modal-content .cancel-button {
+.cancel-button {
   background-color: #dc3545;
+  color: white;
 }
 
-.modal-content .cancel-button:hover {
-  background-color: #c82333;
+/* Status background color changes */
+.status {
+  padding: 5px 10px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.status.confirmed {
+  background-color: #28a745; /* Green for confirmed status */
+  color: white;
+}
+
+.status.waiting {
+  background-color: #ffc107; /* Yellow for waiting status */
+  color: black;
 }

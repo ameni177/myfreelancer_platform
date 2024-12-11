@@ -18,6 +18,8 @@ const CompanyDashboard = () => {
   const companyName = localStorage.getItem("Name") || "Your Company";
   const navigate = useNavigate(); // Initialisiere navigate
 
+  const backendUrl = process.env.REACT_APP_BACKEND_URL; // Get backend URL from environment variables
+
   useEffect(() => {
     fetchProjects();
   }, []);
@@ -25,17 +27,16 @@ const CompanyDashboard = () => {
   const fetchProjects = async () => {
     const companyName = localStorage.getItem("Name") || "Your Company"; // Fetch the company name from local storage
     try {
-      const response = await axios.get(`http://localhost:3001/projects?companyName=${companyName}`);
+      const response = await axios.get(`http://${backendUrl}:3001/projects?companyName=${companyName}`);
       setProjects(response.data);
     } catch (err) {
       console.error("Error fetching projects:", err);
     }
   };
-  
 
   const fetchApplicants = async (projectId) => {
     try {
-      const response = await axios.get(`http://localhost:3001/applications/${projectId}`);
+      const response = await axios.get(`http://${backendUrl}:3001/applications/${projectId}`);
       setApplicants(response.data);
     } catch (err) {
       console.error("Error fetching applicants:", err);
@@ -50,7 +51,7 @@ const CompanyDashboard = () => {
 
   const handleConfirmApplicant = async (applicationId) => {
     try {
-      const response = await axios.put(`http://localhost:3001/applications/confirm/${applicationId}`);
+      const response = await axios.put(`http://${backendUrl}:3001/applications/confirm/${applicationId}`);
       setMessage("Applicant confirmed successfully!");
       fetchApplicants(selectedProject.id);
     } catch (err) {
@@ -71,7 +72,7 @@ const CompanyDashboard = () => {
       setMessage("All fields are required.");
       return;
     }
-  
+
     const projectData = {
       name,
       description,
@@ -80,9 +81,9 @@ const CompanyDashboard = () => {
       budget,
       companyName,  // Include companyName here
     };
-  
+
     try {
-      const response = await axios.post("http://localhost:3001/projects", projectData);
+      const response = await axios.post(`http://${backendUrl}:3001/projects`, projectData);
       setMessage("Project created successfully!");
       setNewProject({ name: "", description: "", deadline: "", skills: "", budget: "" });
       fetchProjects(); // Refresh the list of projects
@@ -91,7 +92,6 @@ const CompanyDashboard = () => {
       console.error("Error creating project:", err);
     }
   };
-  
 
   const closePopup = () => {
     setSelectedProject(null);

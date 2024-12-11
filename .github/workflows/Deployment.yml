@@ -66,6 +66,8 @@ jobs:
           echo "[webserver]" > ../ansible/ec2Maschinen.ini
           terraform output -json >> meineOutputs.json
           jq -r ".instance_public_ips.value[]" meineOutputs.json >> ../ansible/ec2Maschinen.ini
+          EC2_IP=$(jq -r ".instance_public_ips.value[]" meineOutputs.json)
+          echo "EC2_IP=$EC2_IP" >> $GITHUB_ENV
 
       - name: Copy SSH Key
         run: |
@@ -75,7 +77,7 @@ jobs:
 
       - name: Run Ansible Playbook
         working-directory: ./ansible
-        run: ansible-playbook -i ec2Maschinen.ini meinPlaybook.yml --extra-vars "DB_HOST=${{ secrets.DB_HOST }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_NAME=${{ secrets.DB_NAME }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} REGION=${{ secrets.REGION }} REACT_APP_USER_POOL_ID=${{ secrets.REACT_APP_USER_POOL_ID }} REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} REACT_APP_USER_POOL_ID_FREELANCER=${{ secrets.REACT_APP_USER_POOL_ID_FREELANCER }} REACT_APP_CLIENT_ID_FREELANCER=${{ secrets.REACT_APP_CLIENT_ID_FREELANCER }}"
+        run: ansible-playbook -i ec2Maschinen.ini meinPlaybook.yml --extra-vars "DB_HOST=${{ secrets.DB_HOST }} DB_USER=${{ secrets.DB_USER }} DB_PASSWORD=${{ secrets.DB_PASSWORD }} DB_NAME=${{ secrets.DB_NAME }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} REGION=${{ secrets.REGION }} REACT_APP_USER_POOL_ID=${{ secrets.REACT_APP_USER_POOL_ID }} REACT_APP_CLIENT_ID=${{ secrets.REACT_APP_CLIENT_ID }} REACT_APP_USER_POOL_ID_FREELANCER=${{ secrets.REACT_APP_USER_POOL_ID_FREELANCER }} REACT_APP_CLIENT_ID_FREELANCER=${{ secrets.REACT_APP_CLIENT_ID_FREELANCER }} REACT_APP_BACKEND_URL=http://${{ env.EC2_IP }}"
 
 
     
