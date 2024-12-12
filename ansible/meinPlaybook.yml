@@ -46,7 +46,7 @@
         name: myFrontend
         image: ameni1717/projectfrontend
         ports:
-          - "3000:3000"
+          - "80:80"
         state: started
         env:
           REACT_APP_USER_POOL_ID: "{{ REACT_APP_USER_POOL_ID }}"
