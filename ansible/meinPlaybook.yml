@@ -46,7 +46,7 @@
 
     - name: Remove Frontend Container
       docker_container:
-        name: myfrontend
+        name: myFrontend
         state: absent
 
     - name: Start Frontend Containerrr
