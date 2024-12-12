@@ -40,7 +40,7 @@
           SECRETACCESSKEYID: "{{ AWS_SECRET_ACCESS_KEY }}"
           REGION: "{{ REGION }}"
     - name: Stop Frontend Container
-    - docker_container:
+      docker_container:
         name: myFrontend
         state: stopped
 
