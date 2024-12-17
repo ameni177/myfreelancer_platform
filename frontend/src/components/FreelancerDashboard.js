@@ -40,7 +40,22 @@ const FreelancerDashboard = () => {
       // Filter projects to exclude applied ones
       const appliedIds = new Set(appliedRes.data.map((p) => p.id));
       const filtered = availableRes.data.filter((project) => !appliedIds.has(project.id));
-      setFilteredProjects(filtered);
+
+      // Sort projects based on status: confirmed first, then awaiting
+      const sortedFiltered = filtered.sort((a, b) => {
+        if (a.status === "confirmed" && b.status !== "confirmed") return -1;
+        if (a.status !== "confirmed" && b.status === "confirmed") return 1;
+        return 0;
+      });
+
+      const sortedApplied = appliedRes.data.sort((a, b) => {
+        if (a.status === "confirmed" && b.status !== "confirmed") return -1;
+        if (a.status !== "confirmed" && b.status === "confirmed") return 1;
+        return 0;
+      });
+
+      setFilteredProjects(sortedFiltered);
+      setApplyProjects(sortedApplied);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
@@ -117,7 +132,7 @@ const FreelancerDashboard = () => {
                 </p>
                 {project.status === "confirmed" && (
                   <button className="start-button" onClick={() => handleStartWorking(project.id)}>
-                    Start Working
+                    Start/Continue Working
                   </button>
                 )}
               </li>

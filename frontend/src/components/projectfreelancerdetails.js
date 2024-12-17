@@ -5,17 +5,17 @@ import { useNavigate } from "react-router-dom";
 import "./projectfreelancerdetails.css";
 
 const ProjectfreelancerDetails = () => {
-  const { projectId } = useParams(); // Get the projectId from the URL
+  const { projectId } = useParams();
   const [project, setProject] = useState(null);
-  const [progress, setProgress] = useState(0); // Set initial progress as 0
-  const [showPopup, setShowPopup] = useState(false); // State to control the popup visibility
-  const [popupMessage, setPopupMessage] = useState(""); // State to hold the message for the popup
-  const [taskStatus, setTaskStatus] = useState(""); // State for task status update
-  const [issueDescription, setIssueDescription] = useState(""); // State for issue reporting
+  const [progress, setProgress] = useState(0);
+  const [newTask, setNewTask] = useState({ name: "", description: "" }); // New task data
+  const [selectedTaskId, setSelectedTaskId] = useState(null); // For tracking selected task
+  const [newTaskStatus, setNewTaskStatus] = useState(""); // New status
   const navigate = useNavigate();
 
-  const backendUrl = process.env.REACT_APP_BACKEND_URL; // Get backend URL from environment variables
+  const backendUrl = process.env.REACT_APP_BACKEND_URL || "localhost";
 
+  // Fetch project details
   useEffect(() => {
     fetchProjectDetails();
   }, []);
@@ -23,63 +23,65 @@ const ProjectfreelancerDetails = () => {
   const fetchProjectDetails = async () => {
     try {
       const response = await axios.get(`http://${backendUrl}:3001/projects/${projectId}`);
-      setProject(response.data);
-      setProgress(response.data.progress); // Initialize progress with project.progress
+      const tasksResponse = await axios.get(`http://${backendUrl}:3001/projects/${projectId}/tasks`);
+      setProject({ ...response.data, tasks: tasksResponse.data });
+      setProgress(response.data.progress);
     } catch (err) {
       console.error("Error fetching project details:", err);
     }
   };
 
-  const handlesaveprogress = () => {
-    console.log("Progress Defined:", progress);
-    saveProgress();
-  };
-
-  // Function to save progress to the backend
+  // Save project progress
   const saveProgress = async () => {
     try {
-      const response = await axios.put(`http://${backendUrl}:3001/projects/${projectId}/progress`, {
-        progress: progress,
-      });
-      console.log("Progress saved:", response.data);
+      await axios.put(`http://${backendUrl}:3001/projects/${projectId}/progress`, { progress });
+      console.log("Progress saved");
     } catch (err) {
       console.error("Error saving progress:", err);
     }
   };
 
-  const zuruck = () => {
-    navigate("/freelancer-dashboard");
+  // Add a new task
+  const addTask = async () => {
+    if (!newTask.name) {
+      alert("Task name is required!");
+      return;
+    }
+    try {
+      await axios.post(`http://${backendUrl}:3001/projects/${projectId}/tasks`, {
+        name: newTask.name,
+        description: newTask.description,
+        status: "pending",
+      });
+      console.log("Task added successfully!");
+      fetchProjectDetails();
+      setNewTask({ name: "", description: "" });
+    } catch (err) {
+      console.error("Error adding task:", err);
+    }
   };
 
-  // Show the popup with the current progress value
-  const showProgressPopup = () => {
-    setPopupMessage(`Current Progress: ${progress}%`);
-    setShowPopup(true);
+  // Update task status
+  const updateTaskStatus = async (taskId) => {
+    try {
+      await axios.put(`http://${backendUrl}:3001/tasks/${taskId}/status`, { status: newTaskStatus });
+      console.log("Task status updated successfully!");
+      fetchProjectDetails();
+      setSelectedTaskId(null);
+      setNewTaskStatus("");
+    } catch (err) {
+      console.error("Error updating task status:", err);
+    }
   };
 
-  // Close the popup
-  const closePopup = () => {
-    setShowPopup(false);
-  };
-
-  // Handle task status update
-  const handleTaskStatusUpdate = () => {
-    console.log("Task Status:", taskStatus);
-    // You can save task status to the backend or update in state as per requirement
-  };
-
-  // Handle issue reporting
-  const handleIssueReport = async () => {
-    if (issueDescription) {
-      try {
-        const response = await axios.post(`http://${backendUrl}:3001/projects/${projectId}/issues`, {
-          description: issueDescription,
-        });
-        console.log("Issue reported:", response.data);
-        setIssueDescription(""); // Reset issue description after reporting
-      } catch (err) {
-        console.error("Error reporting issue:", err);
-      }
+  // Delete a task
+  const deleteTask = async (taskId) => {
+    try {
+      await axios.delete(`http://${backendUrl}:3001/tasks/${taskId}`);
+      console.log("Task deleted successfully!");
+      fetchProjectDetails();
+    } catch (err) {
+      console.error("Error deleting task:", err);
     }
   };
 
@@ -95,76 +97,77 @@ const ProjectfreelancerDetails = () => {
 
           {/* Progress Section */}
           <div className="progress-section">
-            <label htmlFor="progress">Progress: {progress}%</label>
+            <label>Progress: {progress}%</label>
             <input
               type="range"
-              id="progress"
               min="0"
               max="100"
               value={progress}
-              onChange={(e) => setProgress(e.target.value)} // Update progress dynamically
-              className="progress-bar"
+              onChange={(e) => setProgress(e.target.value)}
             />
-            <div className="progress-bar-container">
-              <div className="progress-bar-filled" style={{ width: `${progress}%` }}></div>
-            </div>
-
-            {/* Show the current progress in a popup */}
-            <button onClick={handlesaveprogress}>Save Progress</button>
+            <button onClick={saveProgress}>Save Progress</button>
           </div>
 
-          {/* Task Breakdown & Status Update */}
-          <div className="task-status-section">
-            <h3>Task Breakdown</h3>
-            {project.tasks && project.tasks.length > 0 ? (
-              project.tasks.map((task, index) => (
-                <div key={index} className="task">
-                  <p><strong>Task:</strong> {task.name}</p>
-                  <p><strong>Status:</strong> {task.status}</p>
-                  <button onClick={() => setTaskStatus(task.name)}>Update Status</button>
-                </div>
-              ))
-            ) : (
-              <p>No tasks available</p>
-            )}
+          {/* Tasks Section */}
+          <div className="task-section">
+            <h3>Tasks</h3>
+            <div className="tasks-list">
+              {project.tasks && project.tasks.length > 0 ? (
+                project.tasks.map((task) => (
+                  <div key={task.id} className="task">
+                    <div className="task-header">
+                      <div>
+                        <p><strong>Task:</strong> {task.name}</p>
+                        <p><strong>Description:</strong> {task.description}</p>
+                        <p><strong>Status:</strong> {task.status}</p>
+                      </div>
+                      <div className="task-buttons">
+                        <button onClick={() => deleteTask(task.id)}>Delete</button>
+                        <button onClick={() => setSelectedTaskId(task.id)}>
+                          {selectedTaskId === task.id ? "Close" : "Update Status"}
+                        </button>
+                      </div>
+                    </div>
 
-            {/* Task Status Update Form */}
-            <div className="task-status-form">
-              <label htmlFor="taskStatus">Update Task Status</label>
+                    {/* Update Task Status Form */}
+                    {selectedTaskId === task.id && (
+                      <div className="task-update-form">
+                        <select
+                          value={newTaskStatus}
+                          onChange={(e) => setNewTaskStatus(e.target.value)}
+                        >
+                          <option value="">Select Status</option>
+                          <option value="in progress">In Progress</option>
+                          <option value="done">Done</option>
+                        </select>
+                        <button onClick={() => updateTaskStatus(task.id)}>Update</button>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <p>No tasks available</p>
+              )}
+            </div>
+
+            {/* Add New Task */}
+            <div className="add-task">
+              <h4>Add New Task</h4>
               <input
                 type="text"
-                id="taskStatus"
-                value={taskStatus}
-                onChange={(e) => setTaskStatus(e.target.value)}
-                placeholder="Enter task status"
+                placeholder="Task Name"
+                value={newTask.name}
+                onChange={(e) => setNewTask({ ...newTask, name: e.target.value })}
               />
-              <button onClick={handleTaskStatusUpdate}>Save Task Status</button>
+              <textarea
+                placeholder="Task Description"
+                value={newTask.description}
+                onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+              />
+              <button onClick={addTask}>Add Task</button>
             </div>
           </div>
-
-          {/* Issue Reporting */}
-          <div className="issue-reporting">
-            <h3>Report an Issue</h3>
-            <textarea
-              value={issueDescription}
-              onChange={(e) => setIssueDescription(e.target.value)}
-              placeholder="Describe the issue..."
-            ></textarea>
-            <button onClick={handleIssueReport}>Report Issue</button>
-            <br />
-            <br />
-            <button onClick={zuruck}>Go to Dashboard</button>
-          </div>
-
-          {/* Popup to show the progress value */}
-          {showPopup && (
-            <div className="popup">
-              <div className="popup-content">
-                <p>{popupMessage}</p>
-                <button onClick={closePopup}>Close</button>
-              </div>
-            </div>
-          )}
+          <button onClick={() => navigate("/freelancer-dashboard")}>Go to Dashboard</button>
         </>
       ) : (
         <p>Loading project details...</p>

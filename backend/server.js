@@ -243,6 +243,88 @@ app.put('/projects/:id/progress', (req, res) => {
   });
 });
 
+// Get all tasks for a specific project
+app.get('/projects/:id/tasks', (req, res) => {
+  const projectId = req.params.id;
+
+  const query = 'SELECT * FROM tasks WHERE project_id = ?';
+
+  db.execute(query, [projectId], (err, results) => {
+    if (err) {
+      console.error('Error fetching tasks:', err);
+      return res.status(500).json({ message: 'Error fetching tasks' });
+    }
+
+    res.json(results);
+  });
+});
+
+// Create a new task for a project
+app.post('/projects/:id/tasks', (req, res) => {
+  const projectId = req.params.id;
+  const { name, description, status } = req.body;
+
+  if (!name) {
+    return res.status(400).json({ message: 'Task name is required' });
+  }
+
+  const query = `
+    INSERT INTO tasks (project_id, name, description, status)
+    VALUES (?, ?, ?, ?)
+  `;
+
+  db.execute(query, [projectId, name, description, status || 'pending'], (err, results) => {
+    if (err) {
+      console.error('Error creating task:', err);
+      return res.status(500).json({ message: 'Error creating task' });
+    }
+
+    res.status(201).json({ message: 'Task created successfully!', taskId: results.insertId });
+  });
+});
+// Update task status
+app.put('/tasks/:taskId/status', (req, res) => {
+  const taskId = req.params.taskId;
+  const { status } = req.body;
+
+  if (!status) {
+    return res.status(400).json({ message: 'Status is required' });
+  }
+
+  const query = 'UPDATE tasks SET status = ? WHERE id = ?';
+
+  db.execute(query, [status, taskId], (err, results) => {
+    if (err) {
+      console.error('Error updating task status:', err);
+      return res.status(500).json({ message: 'Error updating task status' });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json({ message: 'Task status updated successfully!' });
+  });
+});
+// Delete a task
+app.delete('/tasks/:taskId', (req, res) => {
+  const taskId = req.params.taskId;
+
+  const query = 'DELETE FROM tasks WHERE id = ?';
+
+  db.execute(query, [taskId], (err, results) => {
+    if (err) {
+      console.error('Error deleting task:', err);
+      return res.status(500).json({ message: 'Error deleting task' });
+    }
+
+    if (results.affectedRows === 0) {
+      return res.status(404).json({ message: 'Task not found' });
+    }
+
+    res.json({ message: 'Task deleted successfully!' });
+  });
+});
 
 // Start the server
 app.listen(port, () => {
