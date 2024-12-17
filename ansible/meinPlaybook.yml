@@ -39,15 +39,6 @@
           ACCESSKEYID: "{{ AWS_ACCESS_KEY_ID }}"
           SECRETACCESSKEYID: "{{ AWS_SECRET_ACCESS_KEY }}"
           REGION: "{{ REGION }}"
-    - name: Stop Frontend Container
-      docker_container:
-        name: myFrontend
-        state: stopped
-
-    - name: Remove Frontend Container
-      docker_container:
-        name: myFrontend
-        state: absent
 
     - name: Start Frontend Containerrr
       docker_container:
