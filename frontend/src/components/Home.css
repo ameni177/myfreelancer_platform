@@ -25,7 +25,7 @@
     height: 500px;
     border-radius: 10px;
     background-color: white;
-    color: #4e54c8;
+    color: black;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -41,7 +41,7 @@
   }
   
   .freelancer-tile {
-    background: linear-gradient(to bottom, #6a11cb, #2575fc);
+    background: linear-gradient(to bottom, #b4b2b8, #2575fc);
     color: white;
   }
   

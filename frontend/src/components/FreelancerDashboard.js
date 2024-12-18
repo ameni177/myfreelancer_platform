@@ -11,6 +11,8 @@ const FreelancerDashboard = () => {
   const freelancerName = localStorage.getItem("Name") || "Freelancer";
 
   const [selectedProjectId, setSelectedProjectId] = useState(null);
+  const [selectedcompanyname, setSelectedcompanyname] = useState(null);
+  const [selectedprojectname, setSelectedprojectname] = useState(null);
   const [skills, setSkills] = useState("");
   const [messageToCompany, setMessageToCompany] = useState("");
   const [cvFile, setCvFile] = useState(null);
@@ -84,6 +86,18 @@ const FreelancerDashboard = () => {
       const response = await axios.post(`http://${backendUrl}:3001/apply`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
+      try {
+        await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
+            companyName: selectedcompanyname,
+            freelancerName,
+            projectId: selectedProjectId,
+            message: `Freelancer ${freelancerName} applied for your project: ${selectedprojectname}`,
+        });
+    } catch (err) {
+        console.error("Error sending message:", err);
+        setMessage("Error: Unable to send message to the company.");
+    }
+    
       setMessage(response.data.message);
       setShowApplyModal(false);
       fetchData(); // Refresh data after successful application
@@ -161,6 +175,8 @@ const FreelancerDashboard = () => {
                 <button
                   onClick={() => {
                     setSelectedProjectId(project.id);
+                    setSelectedcompanyname(project.companyname);
+                    setSelectedprojectname(project.name);
                     setShowApplyModal(true);
                   }}
                 >

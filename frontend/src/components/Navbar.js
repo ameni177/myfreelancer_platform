@@ -56,6 +56,9 @@ const Navbar = () => {
         <li>
           <Link to="/contact">Contact</Link>
         </li>
+        <li>
+  {userRole === "company" && <Link to="/inbox">Inbox</Link>}
+</li>
             <li>
               <button className="logout-button" onClick={handleLogout}>
                 Logout

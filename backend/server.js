@@ -326,6 +326,45 @@ app.delete('/tasks/:taskId', (req, res) => {
   });
 });
 
+// POST /inbox/send-message
+app.post("/inbox/send-message", async (req, res) => {
+  const { companyName, freelancerName, projectId, message } = req.body;
+
+  try {
+      await db.query(
+          "INSERT INTO inbox (company_name, freelancer_name, project_id, message) VALUES (?, ?, ?, ?)",
+          [companyName, freelancerName, projectId, message]
+      );
+
+      res.status(200).json({ success: true, message: "Message sent to company inbox" });
+  } catch (err) {
+      console.error("Error sending message to inbox:", err);
+      res.status(500).json({ success: false, error: "Failed to send message to inbox" });
+  }
+});
+// GET /inbox/company-messages
+app.get("/inbox/company-messages", (req, res) => {
+  const { companyName } = req.query;
+
+  // Check if companyName is provided
+  if (!companyName) {
+    return res.status(400).json({ success: false, message: 'Company Name is required' });
+  }
+
+  const query = "SELECT * FROM inbox WHERE company_name = ? ORDER BY created_at DESC";
+
+  // Execute the query with db.execute instead of await
+  db.execute(query, [companyName], (err, results) => {
+    if (err) {
+      console.error("Error fetching company inbox messages:", err);
+      return res.status(500).json({ success: false, error: "Failed to fetch inbox messages" });
+    }
+
+    return res.status(200).json({ success: true, messages: results });
+  });
+});
+
+
 // Start the server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);

@@ -1,0 +1,22 @@
+.inbox-container {
+    padding: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .inbox-item {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #fff;
+  }
+  
+  .inbox-item p {
+    margin: 5px 0;
+  }
+  
+  .inbox-item em {
+    color: #888;
+    font-size: 0.9em;
+  }
+  
