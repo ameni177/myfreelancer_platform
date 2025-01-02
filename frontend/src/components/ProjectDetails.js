@@ -83,6 +83,8 @@ const ProjectDetails = () => {
               {applicants.map((applicant) => (
                 <li key={applicant.id}>
                   <p><strong>Freelancer:</strong> {applicant.freelancer_name}</p>
+                  <p><strong>Freelancer email:</strong> {applicant.freelancer_email}</p>
+                  <p><strong>Freelancer phone:</strong> {applicant.freelancer_phone}</p>
                   <p><strong>Status:</strong> {applicant.status}</p>
                   <p><strong>Skills:</strong> {applicant.skills}</p>
                   <p><strong>Message to Company:</strong> {applicant.message_to_company}</p>

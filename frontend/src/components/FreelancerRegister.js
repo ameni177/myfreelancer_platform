@@ -112,8 +112,12 @@ const FreelancerRegister = () => {
             return;
           }
           const NameAttribute = attributes.find(attribute => attribute.Name === "given_name");
+          const EmailAttribute = attributes.find(attribute => attribute.Name === "email");
+          const PhoneAttribute = attributes.find(attribute => attribute.Name === "phone_number");
           if (NameAttribute) {
             localStorage.setItem("Name", NameAttribute.Value);
+            localStorage.setItem("Email", EmailAttribute.Value);
+            localStorage.setItem("Phone", PhoneAttribute.Value);
           }
           localStorage.setItem("isAuthenticated", "true");
           localStorage.setItem("userRole", "freeancer");

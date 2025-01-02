@@ -10,7 +10,9 @@ const ProjectfreelancerDetails = () => {
   const [progress, setProgress] = useState(0);
   const [newTask, setNewTask] = useState({ name: "", description: "" }); // New task data
   const [selectedTaskId, setSelectedTaskId] = useState(null); // For tracking selected task
-  const [newTaskStatus, setNewTaskStatus] = useState(""); // New status
+  const [newTaskStatus, setNewTaskStatus] = useState(""); 
+  const freelancerName = localStorage.getItem("Name") || "Freelancer";
+  const freelancerEmail = localStorage.getItem("Email")// New status
   const navigate = useNavigate();
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL || "localhost";
@@ -59,20 +61,49 @@ const ProjectfreelancerDetails = () => {
     } catch (err) {
       console.error("Error adding task:", err);
     }
+
+    try {
+            await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
+                companyName: project.companyname,
+                freelancerName:freelancerEmail,
+                projectId: project.id,
+                message: `Freelancer ${freelancerName}  added new Task: ${newTask.name}`,
+            });
+        } catch (err) {
+            console.error("Error sending message:", err);
+           // setMessage("Error: Unable to send message to the company.");
+        }
   };
 
   // Update task status
   const updateTaskStatus = async (taskId) => {
     try {
+      // Find the task by ID to get the task name
+      const task = project.tasks.find((task) => task.id === taskId);
+      if (!task) {
+        console.error("Task not found");
+        return;
+      }
+  
+      // Update the task status
       await axios.put(`http://${backendUrl}:3001/tasks/${taskId}/status`, { status: newTaskStatus });
       console.log("Task status updated successfully!");
       fetchProjectDetails();
       setSelectedTaskId(null);
       setNewTaskStatus("");
+  
+      // Send a message to the inbox
+      await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
+        companyName: project.companyname,
+        freelancerName:freelancerEmail,
+        projectId: project.id,
+        message: `Freelancer ${freelancerName} updated the status of task "${task.name}" to "${newTaskStatus}"`,
+      });
     } catch (err) {
-      console.error("Error updating task status:", err);
+      console.error("Error updating task status or sending message:", err);
     }
   };
+  
 
   // Delete a task
   const deleteTask = async (taskId) => {

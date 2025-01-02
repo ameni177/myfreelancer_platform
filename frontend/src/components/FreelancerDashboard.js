@@ -9,6 +9,8 @@ const FreelancerDashboard = () => {
   const [filteredProjects, setFilteredProjects] = useState([]); // Available projects the freelancer hasn't applied for
   const [message, setMessage] = useState("");
   const freelancerName = localStorage.getItem("Name") || "Freelancer";
+  const freelancerEmail = localStorage.getItem("Email") || ""; // Freelancer email
+  const freelancerPhone = localStorage.getItem("Phone") || ""; // Freelancer phone
 
   const [selectedProjectId, setSelectedProjectId] = useState(null);
   const [selectedcompanyname, setSelectedcompanyname] = useState(null);
@@ -19,7 +21,7 @@ const FreelancerDashboard = () => {
   const [showApplyModal, setShowApplyModal] = useState(false);
 
   const navigate = useNavigate();
-  const backendUrl = process.env.REACT_APP_BACKEND_URL; // Hook for navigation
+  const backendUrl = process.env.REACT_APP_BACKEND_URL; // Backend URL from environment variables
 
   // Fetch data when the page loads
   useEffect(() => {
@@ -43,21 +45,7 @@ const FreelancerDashboard = () => {
       const appliedIds = new Set(appliedRes.data.map((p) => p.id));
       const filtered = availableRes.data.filter((project) => !appliedIds.has(project.id));
 
-      // Sort projects based on status: confirmed first, then awaiting
-      const sortedFiltered = filtered.sort((a, b) => {
-        if (a.status === "confirmed" && b.status !== "confirmed") return -1;
-        if (a.status !== "confirmed" && b.status === "confirmed") return 1;
-        return 0;
-      });
-
-      const sortedApplied = appliedRes.data.sort((a, b) => {
-        if (a.status === "confirmed" && b.status !== "confirmed") return -1;
-        if (a.status !== "confirmed" && b.status === "confirmed") return 1;
-        return 0;
-      });
-
-      setFilteredProjects(sortedFiltered);
-      setApplyProjects(sortedApplied);
+      setFilteredProjects(filtered);
     } catch (err) {
       console.error("Error fetching data:", err);
     }
@@ -78,6 +66,8 @@ const FreelancerDashboard = () => {
     const formData = new FormData();
     formData.append("projectId", selectedProjectId);
     formData.append("freelancerName", freelancerName);
+    formData.append("freelancerEmail", freelancerEmail); // Include freelancer email
+    formData.append("freelancerPhone", freelancerPhone); // Include freelancer phone
     formData.append("skills", skills);
     formData.append("messageToCompany", messageToCompany);
     formData.append("cv", cvFile);
@@ -89,32 +79,21 @@ const FreelancerDashboard = () => {
       try {
         await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
             companyName: selectedcompanyname,
-            freelancerName,
+            freelancerName:freelancerEmail,
             projectId: selectedProjectId,
-            message: `Freelancer ${freelancerName} applied for your project: ${selectedprojectname}`,
+            message: `Freelancer ${freelancerName} ${freelancerEmail} applied for your project: ${selectedprojectname}`,
         });
     } catch (err) {
         console.error("Error sending message:", err);
         setMessage("Error: Unable to send message to the company.");
     }
-    
+   
       setMessage(response.data.message);
       setShowApplyModal(false);
       fetchData(); // Refresh data after successful application
     } catch (err) {
       setMessage("Error applying for the project");
       console.error("Error:", err);
-    }
-  };
-
-  // Function to get the status class
-  const getStatusClass = (status) => {
-    if (status === "confirmed") {
-      return "status confirmed"; // Green for confirmed status
-    } else if (status === "awaiting") {
-      return "status waiting"; // Yellow for waiting status
-    } else {
-      return "status"; // Default class for other statuses
     }
   };
 
@@ -125,7 +104,6 @@ const FreelancerDashboard = () => {
         <p>Manage your projects and find new opportunities.</p>
       </header>
 
-      {/* Applied Projects Section */}
       <section className="applied-projects">
         <h2>My Applied Projects</h2>
         <ul>
@@ -137,15 +115,9 @@ const FreelancerDashboard = () => {
                 <h3>{project.name}</h3>
                 <p><strong>Company:</strong> {project.companyname}</p>
                 <p><strong>Description:</strong> {project.description}</p>
-                <p><strong>Skills:</strong> {project.skills}</p>
-                <p><strong>Deadline:</strong> {project.deadline}</p>
-                <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-                <p>
-                  <strong>Status:</strong> 
-                  <span className={getStatusClass(project.status)}>{project.status}</span>
-                </p>
+                <p><strong>Status:</strong> {project.status}</p>
                 {project.status === "confirmed" && (
-                  <button className="start-button" onClick={() => handleStartWorking(project.id)}>
+                  <button onClick={() => handleStartWorking(project.id)}>
                     Start/Continue Working
                   </button>
                 )}
@@ -155,7 +127,6 @@ const FreelancerDashboard = () => {
         </ul>
       </section>
 
-      {/* Available Projects Section */}
       <section className="available-projects">
         <h2>Available Projects</h2>
         {message && <p className="message">{message}</p>}
@@ -168,10 +139,7 @@ const FreelancerDashboard = () => {
                 <h3>{project.name}</h3>
                 <p><strong>Company:</strong> {project.companyname}</p>
                 <p><strong>Description:</strong> {project.description}</p>
-                <p><strong>Skills:</strong> {project.skills}</p>
                 <p><strong>Deadline:</strong> {project.deadline}</p>
-                <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-                
                 <button
                   onClick={() => {
                     setSelectedProjectId(project.id);
@@ -188,7 +156,6 @@ const FreelancerDashboard = () => {
         </ul>
       </section>
 
-      {/* Apply Modal */}
       {showApplyModal && (
         <div className="modal">
           <div className="modal-content">
@@ -211,9 +178,7 @@ const FreelancerDashboard = () => {
             />
             <div className="modal-actions">
               <button onClick={handleApply}>Submit</button>
-              <button className="cancel-button" onClick={() => setShowApplyModal(false)}>
-                Cancel
-              </button>
+              <button onClick={() => setShowApplyModal(false)}>Cancel</button>
             </div>
           </div>
         </div>

@@ -140,57 +140,41 @@ app.get('/applications', (req, res) => {
 
 // Endpoint to apply for a project
 app.post("/apply", upload.single("cv"), async (req, res) => {
-  const { projectId, freelancerName, skills, messageToCompany } = req.body;
+  const { projectId, freelancerName, freelancerEmail, freelancerPhone, skills, messageToCompany } = req.body;
   const cvFile = req.file;
 
-  if (!projectId || !freelancerName || !cvFile) {
-    return res
-      .status(400)
-      .json({ message: "Project ID, Freelancer Name, and CV file are required" });
+  if (!projectId || !freelancerName || !freelancerEmail || !freelancerPhone || !cvFile) {
+    return res.status(400).json({
+      message: "Project ID, Freelancer Name, Email, Phone, and CV file are required.",
+    });
   }
 
-  // Upload CV to S3 (without ACL since Bucket Owner Enforced is enabled)
-  const s3Params = {
-    Bucket: "freelancerbucketameni",
-    Key: `cv-files/${Date.now()}_${cvFile.originalname}`, // Unique file name in S3
-    Body: fs.createReadStream(cvFile.path),
-    ContentType: cvFile.mimetype,
-  };
+  // Save the application details in the database (add your DB logic here)
+  const query = `
+    INSERT INTO applications 
+    (project_id, freelancer_name, freelancer_email, freelancer_phone, cv_url, skills, message_to_company) 
+    VALUES (?, ?, ?, ?, ?, ?, ?)
+  `;
 
-  try {
-    const s3Response = await s3.upload(s3Params).promise();
-    const cvUrl = s3Response.Location; // URL to access the uploaded file
-
-    // Save application details in the database
-    const query = `INSERT INTO applications (project_id, freelancer_name, cv_url, skills, message_to_company) 
-                   VALUES (?, ?, ?, ?, ?)`;
-
-    db.execute(
-      query,
-      [projectId, freelancerName, cvUrl, skills, messageToCompany],
-      (err, results) => {
-        if (err) {
-          console.error("Error applying for project:", err);
-          return res.status(500).json({ message: "Error applying for project" });
-        }
-
-        res.status(200).json({ message: "Successfully applied for the project" });
+  // Replace with your database logic
+  db.execute(
+    query,
+    [projectId, freelancerName, freelancerEmail, freelancerPhone, cvFile.filename, skills, messageToCompany],
+    (err) => {
+      if (err) {
+        return res.status(500).json({ message: "Error saving application." });
       }
-    );
-  } catch (err) {
-    console.error("Error uploading CV to S3:", err);
-    res.status(500).json({ message: "Error uploading CV to S3" });
-  } finally {
-    // Clean up the temporary file stored locally
-    fs.unlinkSync(cvFile.path);
-  }
+      res.status(200).json({ message: "Successfully applied for the project." });
+    }
+  );
 });
 // Endpoint to get applicants for a specific project
 app.get('/applications/:projectId', (req, res) => {
   const projectId = req.params.projectId;
 
   const query = `
-    SELECT a.id, a.freelancer_name, a.status , a.skills, a.message_to_company, a.cv_url
+    SELECT a.id, a.freelancer_name,  a.freelancer_email, 
+      a.freelancer_phone,  a.status , a.skills, a.message_to_company, a.cv_url
     FROM applications a 
     WHERE a.project_id = ?`;
 
