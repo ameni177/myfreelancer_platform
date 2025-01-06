@@ -73,8 +73,8 @@ const FreelancerDashboard = () => {
     const formData = new FormData();
     formData.append("projectId", selectedProjectId);
     formData.append("freelancerName", freelancerName);
-    formData.append("freelancerEmail", freelancerEmail);
-    formData.append("freelancerPhone", freelancerPhone);
+    formData.append("freelancerEmail", freelancerEmail); // Include freelancer email
+    formData.append("freelancerPhone", freelancerPhone); // Include freelancer phone
     formData.append("skills", skills);
     formData.append("messageToCompany", messageToCompany);
     formData.append("cv", cvFile);
@@ -83,17 +83,21 @@ const FreelancerDashboard = () => {
       const response = await axios.post(`http://${backendUrl}:3001/apply`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-
-      await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
-        companyName: selectedcompanyname,
-        freelancerName: freelancerEmail,
-        projectId: selectedProjectId,
-        message: `Freelancer ${freelancerName} ${freelancerEmail} applied for your project: ${selectedprojectname}`,
-      });
-
+      try {
+        await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
+            companyName: selectedcompanyname,
+            freelancerName:freelancerEmail,
+            projectId: selectedProjectId,
+            message: `Freelancer ${freelancerName} ${freelancerEmail} applied for your project: ${selectedprojectname}`,
+        });
+    } catch (err) {
+        console.error("Error sending message:", err);
+        setMessage("Error: Unable to send message to the company.");
+    }
+   
       setMessage(response.data.message);
       setShowApplyModal(false);
-      fetchData();
+      fetchData(); // Refresh data after successful application
     } catch (err) {
       setMessage("Error applying for the project");
       console.error("Error:", err);
