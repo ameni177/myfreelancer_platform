@@ -53,16 +53,16 @@ const CompanyInbox = () => {
       )
     );
     setSelectedMessage(message);
-    markMessageAsRead(message.id);
+   // markMessageAsRead(message.id);
   };
 
-  const markMessageAsRead = async (messageId) => {
+ /* const markMessageAsRead = async (messageId) => {
     try {
       await axios.put(`http://${backendUrl}:3001/inbox/mark-read`, { messageId });
     } catch (err) {
       console.error("Error marking message as read:", err);
     }
-  };
+  };*/
 
   const closeMessagePopup = () => {
     setSelectedMessage(null);
