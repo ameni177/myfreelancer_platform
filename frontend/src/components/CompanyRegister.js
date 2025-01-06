@@ -85,7 +85,7 @@ const CompanyRegister = () => {
         setMessage(`Error: ${err.message}`);
         return;
       }
-      setMessage("Account confirmed successfully!");
+      setMessage("Account confirmed succcessfully!");
       setFormData({ ...formData, confirmationCode: "" });
       setIsRegistered(false);
     });
