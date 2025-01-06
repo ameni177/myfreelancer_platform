@@ -1,5 +1,14 @@
 import React, { useState } from "react";
-import "./FreelancerRegister.css";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Tab,
+  Tabs,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +20,7 @@ const poolData = {
 const userPool = new CognitoUserPool(poolData);
 
 const FreelancerRegister = () => {
-  const [activeTab, setActiveTab] = useState("register"); 
+  const [activeTab, setActiveTab] = useState("register");
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -28,6 +37,10 @@ const FreelancerRegister = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
   };
 
   const handleRegister = (e) => {
@@ -76,11 +89,9 @@ const FreelancerRegister = () => {
         return;
       }
       setMessage("Account confirmed successfully!");
-      //setFormData({ ...formData, confirmationCode: "" });
-      localStorage.setItem("Name", formData.firstName)
+      localStorage.setItem("Name", formData.firstName);
       navigate("/freelancer-dashboard");
       setIsRegistered(false);
-    
     });
   };
 
@@ -104,23 +115,22 @@ const FreelancerRegister = () => {
       onSuccess: (result) => {
         setLoading(false);
         setMessage("Login successful!");
-        alert("Login successful!");
         cognitoUser.getUserAttributes((err, attributes) => {
           if (err) {
             setLoading(false);
             setMessage(`Error fetching user attributes: ${err.message}`);
             return;
           }
-          const NameAttribute = attributes.find(attribute => attribute.Name === "given_name");
-          const EmailAttribute = attributes.find(attribute => attribute.Name === "email");
-          const PhoneAttribute = attributes.find(attribute => attribute.Name === "phone_number");
-          if (NameAttribute) {
-            localStorage.setItem("Name", NameAttribute.Value);
-            localStorage.setItem("Email", EmailAttribute.Value);
-            localStorage.setItem("Phone", PhoneAttribute.Value);
+          const nameAttribute = attributes.find((attr) => attr.Name === "given_name");
+          const emailAttribute = attributes.find((attr) => attr.Name === "email");
+          const phoneAttribute = attributes.find((attr) => attr.Name === "phone_number");
+          if (nameAttribute) {
+            localStorage.setItem("Name", nameAttribute.Value);
+            localStorage.setItem("Email", emailAttribute.Value);
+            localStorage.setItem("Phone", phoneAttribute.Value);
           }
           localStorage.setItem("isAuthenticated", "true");
-          localStorage.setItem("userRole", "freeancer");
+          localStorage.setItem("userRole", "freelancer");
           navigate("/freelancer-dashboard");
         });
       },
@@ -132,164 +142,147 @@ const FreelancerRegister = () => {
   };
 
   return (
-    <div className="freelancer-register-container">
-      <h1>Welcome to Freelancer Portal</h1>
-      <p>Here you can register to become a freelancer or log in to your existing account.</p>
-      
-      <div className="tabs-container">
-        <button
-          className={`tab ${activeTab === "register" ? "active-tab" : ""}`}
-          onClick={() => setActiveTab("register")}
-        >
-          Register
-        </button>
-        <button
-          className={`tab ${activeTab === "login" ? "active-tab" : ""}`}
-          onClick={() => setActiveTab("login")}
-        >
-          Login
-        </button>
-      </div>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4, p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
+      <Typography variant="h4" textAlign="center" gutterBottom>
+        Welcome to Freelancer Portal
+      </Typography>
+      <Typography variant="body1" textAlign="center" gutterBottom>
+        Here you can register to become a freelancer or log in to your existing account.
+      </Typography>
 
-      <div className="tabs-text">
-        {activeTab === "register" && !isRegistered && (
-          <p>Please fill out the registration form below to create your account.</p>
-        )}
-        {isRegistered && (
-          <p>We've sent a confirmation code to your email. Please enter it below.</p>
-        )}
-        {activeTab === "login" && (
-          <p>If you already have an account, enter your credentials to log in.</p>
-        )}
-      </div>
+      <Tabs value={activeTab} onChange={handleTabChange} centered sx={{ marginBottom: 2 }}>
+        <Tab label="Register" value="register" />
+        <Tab label="Login" value="login" />
+      </Tabs>
 
-      <div className="tab-content">
-        {message && <p className={`message ${message.startsWith("Error") ? "error" : ""}`}>{message}</p>}
+      {message && (
+        <Alert severity={message.startsWith("Error") ? "error" : "success"} sx={{ mb: 2 }}>
+          {message}
+        </Alert>
+      )}
 
-        {activeTab === "register" && !isRegistered && (
-          <form className="form-container" onSubmit={handleRegister}>
-            <h2>Register as a Freelancer</h2>
-            <div className="form-group">
-              <label htmlFor="firstName">First Name:</label>
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleChange}
-                placeholder="Enter your first name"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="lastName">Last Name:</label>
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleChange}
-                placeholder="Enter your last name"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="telephone">Telephone:</label>
-              <input
-                type="tel"
-                id="telephone"
-                name="telephone"
-                value={formData.telephone}
-                onChange={handleChange}
-                placeholder="Enter your telephone number"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email Address:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password:</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter a password"
-                required
-              />
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
-        )}
+      {activeTab === "register" && !isRegistered && (
+        <form onSubmit={handleRegister}>
+          <TextField
+            label="First Name"
+            name="firstName"
+            value={formData.firstName}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Last Name"
+            name="lastName"
+            value={formData.lastName}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Telephone"
+            name="telephone"
+            type="tel"
+            value={formData.telephone}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Email Address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Register"}
+          </Button>
+        </form>
+      )}
 
-        {isRegistered && (
-          <form className="form-container" onSubmit={handleConfirmRegistration}>
-            <h2>Enter the Verification Code</h2>
-            <div className="form-group">
-              <label htmlFor="confirmationCode">Confirmation Code:</label>
-              <input
-                type="text"
-                id="confirmationCode"
-                name="confirmationCode"
-                value={formData.confirmationCode}
-                onChange={handleChange}
-                placeholder="Enter the code sent to your email"
-                required
-              />
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Confirming..." : "Confirm Registration"}
-            </button>
-          </form>
-        )}
+      {isRegistered && (
+        <form onSubmit={handleConfirmRegistration}>
+          <TextField
+            label="Confirmation Code"
+            name="confirmationCode"
+            value={formData.confirmationCode}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Confirm Registration"}
+          </Button>
+        </form>
+      )}
 
-        {activeTab === "login" && (
-          <form className="form-container" onSubmit={handleLogin}>
-            <h2>Login to Your Account</h2>
-            <div className="form-group">
-              <label htmlFor="email">Email Address:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password:</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+      {activeTab === "login" && (
+        <form onSubmit={handleLogin}>
+          <TextField
+            label="Email Address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Login"}
+          </Button>
+        </form>
+      )}
+    </Box>
   );
 };
 

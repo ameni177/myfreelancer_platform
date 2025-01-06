@@ -1,7 +1,17 @@
 import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  Button,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  Alert,
+  Link,
+} from "@mui/material";
 import axios from "axios";
-import { useNavigate, useParams } from "react-router-dom"; 
-import "./ProjectDetails.css";
+import { useNavigate, useParams } from "react-router-dom";
 
 const ProjectDetails = () => {
   const { projectId } = useParams();
@@ -52,7 +62,7 @@ const ProjectDetails = () => {
 
   const handleConfirmApplicant = async (applicationId) => {
     try {
-      const response = await axios.put(`http://${backendUrl}:3001/applications/confirm/${applicationId}`);
+      await axios.put(`http://${backendUrl}:3001/applications/confirm/${applicationId}`);
       setMessage("Applicant confirmed successfully!");
       fetchApplicants();
     } catch (err) {
@@ -62,68 +72,124 @@ const ProjectDetails = () => {
   };
 
   return (
-    <div className="project-details-container">
-      <button onClick={handleBack}>Back to Dashboard</button>
+    <Box sx={{ maxWidth: 800, mx: "auto", mt: 4, p: 3, boxShadow: 3, borderRadius: 2 }}>
+      <Button variant="outlined" onClick={handleBack} sx={{ mb: 2 }}>
+        Back to Dashboard
+      </Button>
 
       {project && (
-        <div className="project-details">
-          <h2>Project Details</h2>
-          <p><strong>Name:</strong> {project.name}</p>
-          <p><strong>Description:</strong> {project.description}</p>
-          <p><strong>Deadline:</strong> {project.deadline}</p>
-          <p><strong>Skills:</strong> {project.skills}</p>
-          <p><strong>Budget/Hour:</strong> ${project.budget}</p>
-          <p><strong>Progress:</strong> {project.progress}%</p>
+        <Box>
+          <Typography variant="h4" gutterBottom>
+            Project Details
+          </Typography>
+          <Typography variant="body1">
+            <strong>Name:</strong> {project.name}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Description:</strong> {project.description}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Deadline:</strong> {project.deadline}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Skills:</strong> {project.skills}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Budget/Hour:</strong> ${project.budget}
+          </Typography>
+          <Typography variant="body1">
+            <strong>Progress:</strong> {project.progress}%
+          </Typography>
 
-          <h3>Applicants</h3>
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h5" gutterBottom>
+            Applicants
+          </Typography>
           {applicants.length === 0 ? (
-            <p>No applicants yet.</p>
+            <Typography>No applicants yet.</Typography>
           ) : (
-            <ul>
+            <List>
               {applicants.map((applicant) => (
-                <li key={applicant.id}>
-                  <p><strong>Freelancer:</strong> {applicant.freelancer_name}</p>
-                  <p><strong>Freelancer email:</strong> {applicant.freelancer_email}</p>
-                  <p><strong>Freelancer phone:</strong> {applicant.freelancer_phone}</p>
-                  <p><strong>Status:</strong> {applicant.status}</p>
-                  <p><strong>Skills:</strong> {applicant.skills}</p>
-                  <p><strong>Message to Company:</strong> {applicant.message_to_company}</p>
-                  <p><strong>CV:</strong> {applicant.cv_url ? (
-                    <a href={applicant.cv_url} target="_blank" rel="noopener noreferrer">View CV</a>
-                  ) : (
-                    <span>No CV available</span>
-                  )}</p>
+                <ListItem key={applicant.id} divider>
+                  <Box>
+                    <Typography variant="body1">
+                      <strong>Freelancer:</strong> {applicant.freelancer_name}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Email:</strong> {applicant.freelancer_email}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Phone:</strong> {applicant.freelancer_phone}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Status:</strong> {applicant.status}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Skills:</strong> {applicant.skills}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>Message:</strong> {applicant.message_to_company}
+                    </Typography>
+                    <Typography variant="body1">
+                      <strong>CV:</strong>{" "}
+                      {applicant.cv_url ? (
+                        <Link
+                          href={applicant.cv_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          View CV
+                        </Link>
+                      ) : (
+                        "No CV available"
+                      )}
+                    </Typography>
 
-                  {applicant.status !== "confirmed" && (
-                    <button onClick={() => handleConfirmApplicant(applicant.id)}>
-                      Confirm Applicant
-                    </button>
-                  )}
-                </li>
+                    {applicant.status !== "confirmed" && (
+                      <Button
+                        variant="contained"
+                        color="primary"
+                        onClick={() => handleConfirmApplicant(applicant.id)}
+                        sx={{ mt: 1 }}
+                      >
+                        Confirm Applicant
+                      </Button>
+                    )}
+                  </Box>
+                </ListItem>
               ))}
-            </ul>
+            </List>
           )}
 
-          <h3>Project Tasks</h3>
+          <Divider sx={{ my: 3 }} />
+
+          <Typography variant="h5" gutterBottom>
+            Project Tasks
+          </Typography>
           {tasks.length === 0 ? (
-            <p>No tasks assigned yet.</p>
+            <Typography>No tasks assigned yet.</Typography>
           ) : (
-            <ul>
+            <List>
               {tasks.map((task) => (
-                <li key={task.id}>
-                  <p><strong>Task Name:</strong> {task.name}</p>
-                  <p><strong>Description:</strong> {task.description}</p>
-                  <p><strong>Status:</strong> {task.status}</p>
-                </li>
+                <ListItem key={task.id} divider>
+                  <ListItemText
+                    primary={`Task Name: ${task.name}`}
+                    secondary={`Description: ${task.description} | Status: ${task.status}`}
+                  />
+                </ListItem>
               ))}
-            </ul>
+            </List>
           )}
-
-        </div>
+        </Box>
       )}
 
-      {message && <p className="message">{message}</p>}
-    </div>
+      {message && (
+        <Alert severity={message.includes("Error") ? "error" : "success"} sx={{ mt: 2 }}>
+          {message}
+        </Alert>
+      )}
+    </Box>
   );
 };
 

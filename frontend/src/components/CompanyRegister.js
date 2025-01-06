@@ -1,10 +1,19 @@
 import React, { useState } from "react";
-import "./CompanyRegister.css";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Tab,
+  Tabs,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 import { CognitoUserPool, CognitoUser, AuthenticationDetails } from "amazon-cognito-identity-js";
 import { useNavigate } from "react-router-dom";
 
 const poolData = {
-  UserPoolId: process.env.REACT_APP_USER_POOL_ID, 
+  UserPoolId: process.env.REACT_APP_USER_POOL_ID,
   ClientId: process.env.REACT_APP_CLIENT_ID,
 };
 
@@ -28,6 +37,10 @@ const CompanyRegister = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  const handleTabChange = (event, newValue) => {
+    setActiveTab(newValue);
+  };
+
   const handleRegister = (e) => {
     e.preventDefault();
     setLoading(true);
@@ -38,14 +51,8 @@ const CompanyRegister = () => {
       email,
       password,
       [
-        {
-          Name: "email",
-          Value: email,
-        },
-        {
-          Name: "custom:companyName",
-          Value: companyName,
-        },
+        { Name: "email", Value: email },
+        { Name: "custom:companyName", Value: companyName },
       ],
       null,
       (err, result) => {
@@ -72,7 +79,7 @@ const CompanyRegister = () => {
       Pool: userPool,
     });
 
-    cognitoUser.confirmRegistration(confirmationCode, true, function (err, result) {
+    cognitoUser.confirmRegistration(confirmationCode, true, (err, result) => {
       setLoading(false);
       if (err) {
         setMessage(`Error: ${err.message}`);
@@ -104,21 +111,20 @@ const CompanyRegister = () => {
     cognitoUser.authenticateUser(authenticationDetails, {
       onSuccess: (result) => {
         setLoading(false);
-        
         setMessage("Login successful!");
         cognitoUser.getUserAttributes((err, attributes) => {
           if (err) {
-            setLoading(false);
             setMessage(`Error fetching user attributes: ${err.message}`);
             return;
           }
-          const NameAttribute = attributes.find(attribute => attribute.Name === "custom:companyName");
-          if (NameAttribute) {
-            localStorage.setItem("Name", NameAttribute.Value);
+          const nameAttribute = attributes.find((attr) => attr.Name === "custom:companyName");
+          if (nameAttribute) {
+            localStorage.setItem("Name", nameAttribute.Value);
           }
           localStorage.setItem("isAuthenticated", "true");
           localStorage.setItem("userRole", "company");
-        navigate("/company-dashboard");  });
+          navigate("/company-dashboard");
+        });
       },
       onFailure: (err) => {
         setLoading(false);
@@ -128,128 +134,133 @@ const CompanyRegister = () => {
   };
 
   return (
-    <div className="company-register-container">
-      <h1>Welcome to Company Registration</h1>
-      <p>Register or log in to manage your company profile.</p>
+    <Box sx={{ maxWidth: 600, mx: "auto", mt: 4, p: 2, border: "1px solid #ccc", borderRadius: 2 }}>
+      <Typography variant="h4" textAlign="center" gutterBottom>
+        Welcome to Company Registration
+      </Typography>
+      <Typography variant="body1" textAlign="center" gutterBottom>
+        Register or log in to manage your company profile.
+      </Typography>
 
-      <div className="tabs-container">
-        <button
-          className={`tab ${activeTab === "register" ? "active-tab" : ""}`}
-          onClick={() => setActiveTab("register")}
-        >
-          Register
-        </button>
-        <button
-          className={`tab ${activeTab === "login" ? "active-tab" : ""}`}
-          onClick={() => setActiveTab("login")}
-        >
-          Login
-        </button>
-      </div>
+      <Tabs
+        value={activeTab}
+        onChange={handleTabChange}
+        centered
+        sx={{ marginBottom: 2 }}
+      >
+        <Tab label="Register" value="register" />
+        <Tab label="Login" value="login" />
+      </Tabs>
 
-      <div className="tab-content">
-        {message && <p className={`message ${message.startsWith("Error") ? "error" : ""}`}>{message}</p>}
+      {message && (
+        <Alert severity={message.startsWith("Error") ? "error" : "success"} sx={{ mb: 2 }}>
+          {message}
+        </Alert>
+      )}
 
-        {activeTab === "register" && !isRegistered && (
-          <form className="form-container" onSubmit={handleRegister}>
-            <h2>Register Your Company</h2>
-            <div className="form-group">
-              <label htmlFor="companyName">Company Name:</label>
-              <input
-                type="text"
-                id="companyName"
-                name="companyName"
-                value={formData.companyName}
-                onChange={handleChange}
-                placeholder="Enter your company name"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="email">Email Address:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password:</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter a password"
-                required
-              />
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Registering..." : "Register"}
-            </button>
-          </form>
-        )}
+      {activeTab === "register" && !isRegistered && (
+        <form onSubmit={handleRegister}>
+          <TextField
+            label="Company Name"
+            name="companyName"
+            value={formData.companyName}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Email Address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Register"}
+          </Button>
+        </form>
+      )}
 
-        {isRegistered && (
-          <form className="form-container" onSubmit={handleConfirmRegistration}>
-            <h2>Enter the Verification Code</h2>
-            <div className="form-group">
-              <label htmlFor="confirmationCode">Confirmation Code:</label>
-              <input
-                type="text"
-                id="confirmationCode"
-                name="confirmationCode"
-                value={formData.confirmationCode}
-                onChange={handleChange}
-                placeholder="Enter the code sent to your email"
-                required
-              />
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Confirming..." : "Confirm Registration"}
-            </button>
-          </form>
-        )}
+      {isRegistered && (
+        <form onSubmit={handleConfirmRegistration}>
+          <TextField
+            label="Confirmation Code"
+            name="confirmationCode"
+            value={formData.confirmationCode}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Confirm Registration"}
+          </Button>
+        </form>
+      )}
 
-        {activeTab === "login" && (
-          <form className="form-container" onSubmit={handleLogin}>
-            <h2>Login to Your Account</h2>
-            <div className="form-group">
-              <label htmlFor="email">Email Address:</label>
-              <input
-                type="email"
-                id="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label htmlFor="password">Password:</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-            <button type="submit" className="submit-button" disabled={loading}>
-              {loading ? "Logging in..." : "Login"}
-            </button>
-          </form>
-        )}
-      </div>
-    </div>
+      {activeTab === "login" && (
+        <form onSubmit={handleLogin}>
+          <TextField
+            label="Email Address"
+            name="email"
+            type="email"
+            value={formData.email}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <TextField
+            label="Password"
+            name="password"
+            type="password"
+            value={formData.password}
+            onChange={handleChange}
+            fullWidth
+            margin="normal"
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            disabled={loading}
+            sx={{ mt: 2 }}
+          >
+            {loading ? <CircularProgress size={24} /> : "Login"}
+          </Button>
+        </form>
+      )}
+    </Box>
   );
 };
 

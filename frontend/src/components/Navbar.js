@@ -1,6 +1,6 @@
 import React from "react";
+import { AppBar, Toolbar, Typography, Button, IconButton, Box } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
-import "./Navbar.css";
 
 const Navbar = () => {
   const navigate = useNavigate();
@@ -15,60 +15,72 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-logo">
-        <Link to="/">SkillMatch</Link>
-      </div>
-      <ul className="navbar-links">
-      
+    <AppBar position="static" sx={{ background: "linear-gradient(to right, #4e54c8, #8f94fb)" }}>
+      <Toolbar>
+        {/* Logo */}
+        <IconButton
+          edge="start"
+          color="inherit"
+          aria-label="logo"
+          sx={{ mr: 2 }}
+          component={Link}
+          to="/"
+        >
+          <img
+            src="./LOGO1.webp"
+            alt="SkillMatch Logo"
+            style={{ height: "40px", width: "auto" }}
+          />
+        </IconButton>
 
-        {/* Sichtbare Links basierend auf Authentifizierungsstatus */}
-        {!isAuthenticated ? (
-          <>
-            <li>
-              <Link to="/">Home</Link>
-            </li>
-            <li>
-              <Link to="/register-freelancer">Freelancer</Link>
-            </li>
-            <li>
-              <Link to="/register-company">Company</Link>
-            </li>
-            {/* Immer sichtbare Links */}
-          <li>
-          <Link to="/about">About</Link>
-        </li>
-        <li>
-          <Link to="/contact">Contact</Link>
-        </li>
-          </>
-        ) : (
-          <>
-            <li>
-              <Link to={userRole === "company" ? "/company-dashboard" : "/freelancer-dashboard"}>
+        {/* Navbar Links */}
+        <Box sx={{ flexGrow: 1, display: "flex", alignItems: "center" }}>
+          {!isAuthenticated ? (
+            <>
+              <Button color="inherit" component={Link} to="/">
+                Home
+              </Button>
+              <Button color="inherit" component={Link} to="/register-freelancer">
+                Freelancer
+              </Button>
+              <Button color="inherit" component={Link} to="/register-company">
+                Company
+              </Button>
+              <Button color="inherit" component={Link} to="/about">
+                About
+              </Button>
+              <Button color="inherit" component={Link} to="/contact">
+                Contact
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                color="inherit"
+                component={Link}
+                to={userRole === "company" ? "/company-dashboard" : "/freelancer-dashboard"}
+              >
                 Dashboard
-              </Link>
-            </li>
-            {/* Immer sichtbare Links */}
-          <li>
-          <Link to="/about">About</Link>
-        </li>
-        <li>
-          <Link to="/contact">Contact</Link>
-        </li>
-        <li>
-  {userRole === "company" && <Link to="/inbox">Inbox</Link>}
-</li>
-            <li>
-              <button className="logout-button" onClick={handleLogout}>
+              </Button>
+              <Button color="inherit" component={Link} to="/about">
+                About
+              </Button>
+              <Button color="inherit" component={Link} to="/contact">
+                Contact
+              </Button>
+              {userRole === "company" && (
+                <Button color="inherit" component={Link} to="/inbox">
+                  Inbox
+                </Button>
+              )}
+              <Button color="inherit" onClick={handleLogout}>
                 Logout
-              </button>
-            </li>
-          </>
-        )}
-          
-      </ul>
-    </nav>
+              </Button>
+            </>
+          )}
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 

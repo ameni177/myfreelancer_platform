@@ -1,6 +1,17 @@
 import React, { useState, useEffect } from "react";
+import {
+  Box,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  Button,
+  Modal,
+  Paper,
+  Alert,
+  CircularProgress,
+} from "@mui/material";
 import axios from "axios";
-import "./CompanyInbox.css";
 
 const CompanyInbox = () => {
   const [messages, setMessages] = useState([]);
@@ -21,7 +32,6 @@ const CompanyInbox = () => {
       });
 
       if (response.data.success) {
-        // Add a 'read' property to each message (default to false if not provided)
         const messagesWithReadStatus = response.data.messages.map((msg) => ({
           ...msg,
           read: msg.read || false, // Default to false if not present
@@ -37,15 +47,12 @@ const CompanyInbox = () => {
   };
 
   const openMessagePopup = (message) => {
-    // Mark the message as read
     setMessages((prevMessages) =>
       prevMessages.map((msg) =>
         msg.id === message.id ? { ...msg, read: true } : msg
       )
     );
     setSelectedMessage(message);
-
-    // Optional: Persist read status in the backend
     markMessageAsRead(message.id);
   };
 
@@ -62,55 +69,91 @@ const CompanyInbox = () => {
   };
 
   return (
-    <div className="inbox-container">
-      <h1>Inbox</h1>
+    <Box sx={{ maxWidth: 800, mx: "auto", mt: 4, p: 3, boxShadow: 3, borderRadius: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Inbox
+      </Typography>
+
       {error ? (
-        <p className="error">{error}</p>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          {error}
+        </Alert>
       ) : messages.length === 0 ? (
-        <p>No messages found.</p>
+        <Box textAlign="center" mt={4}>
+          <CircularProgress />
+          <Typography variant="body1" sx={{ mt: 2 }}>
+            Loading messages...
+          </Typography>
+        </Box>
       ) : (
-        <ul>
+        <List>
           {messages.map((message) => (
-            <li
+            <ListItem
               key={message.id}
-              className={`inbox-item ${message.read ? "read" : "unread"}`}
+              sx={{
+                backgroundColor: message.read ? "grey.200" : "white",
+                mb: 2,
+                border: "1px solid #ccc",
+                borderRadius: 2,
+                boxShadow: 1,
+                cursor: "pointer",
+              }}
               onClick={() => openMessagePopup(message)}
             >
-              <p>
-                <strong>From:</strong> {message.freelancer_name}
-              </p>
-              <p>
-                <strong>Message:</strong> {message.message.slice(0, 30)}... {/* Show a preview */}
-              </p>
-              <p>
-                <em>{new Date(message.created_at).toLocaleString()}</em>
-              </p>
-            </li>
+              <ListItemText
+                primary={
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: "bold", color: message.read ? "text.secondary" : "text.primary" }}
+                  >
+                    From: {message.freelancer_name}
+                  </Typography>
+                }
+                secondary={
+                  <>
+                    <Typography>
+                      {message.message.slice(0, 30)}...
+                    </Typography>
+                    <Typography variant="caption" display="block">
+                      {new Date(message.created_at).toLocaleString()}
+                    </Typography>
+                  </>
+                }
+              />
+            </ListItem>
           ))}
-        </ul>
+        </List>
       )}
 
-      {/* Popup Modal */}
-      {selectedMessage && (
-        <div className="popup-overlay" onClick={closeMessagePopup}>
-          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-            <button className="close-button" onClick={closeMessagePopup}>
-              &times;
-            </button>
-            <h2>Message Details</h2>
-            <p>
-              <strong>From:</strong> {selectedMessage.freelancer_name}
-            </p>
-            <p>
-              <strong>Message:</strong> {selectedMessage.message}
-            </p>
-            <p>
-              <em>{new Date(selectedMessage.created_at).toLocaleString()}</em>
-            </p>
-          </div>
-        </div>
-      )}
-    </div>
+      <Modal open={!!selectedMessage} onClose={closeMessagePopup}>
+        <Paper sx={{ maxWidth: 500, mx: "auto", mt: 10, p: 3 }}>
+          {selectedMessage && (
+            <>
+              <Typography variant="h5" gutterBottom>
+                Message Details
+              </Typography>
+              <Typography variant="body1">
+                <strong>From:</strong> {selectedMessage.freelancer_name}
+              </Typography>
+              <Typography variant="body1" sx={{ mt: 2 }}>
+                <strong>Message:</strong> {selectedMessage.message}
+              </Typography>
+              <Typography variant="caption" display="block" sx={{ mt: 2, color: "text.secondary" }}>
+                {new Date(selectedMessage.created_at).toLocaleString()}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={closeMessagePopup}
+                sx={{ mt: 3 }}
+              >
+                Close
+              </Button>
+            </>
+          )}
+        </Paper>
+      </Modal>
+    </Box>
   );
 };
 

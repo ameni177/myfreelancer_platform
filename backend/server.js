@@ -149,25 +149,45 @@ app.post("/apply", upload.single("cv"), async (req, res) => {
     });
   }
 
-  // Save the application details in the database (add your DB logic here)
-  const query = `
-    INSERT INTO applications 
-    (project_id, freelancer_name, freelancer_email, freelancer_phone, cv_url, skills, message_to_company) 
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `;
+  const s3Params = {
+    Bucket: "freelancerbucketameni",
+    Key: `cv-files/${Date.now()}_${cvFile.originalname}`, // Unique file name in S3
+    Body: fs.createReadStream(cvFile.path),
+    ContentType: cvFile.mimetype,
+  };
 
-  // Replace with your database logic
-  db.execute(
-    query,
-    [projectId, freelancerName, freelancerEmail, freelancerPhone, cvFile.filename, skills, messageToCompany],
-    (err) => {
-      if (err) {
-        return res.status(500).json({ message: "Error saving application." });
+  try {
+    // Upload the file to S3
+    const s3Response = await s3.upload(s3Params).promise();
+    const cvUrl = s3Response.Location; // URL to access the uploaded file
+
+    // Save the application details in the database
+    const query = `
+      INSERT INTO applications 
+      (project_id, freelancer_name, freelancer_email, freelancer_phone, cv_url, skills, message_to_company) 
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `;
+
+    db.execute(
+      query,
+      [projectId, freelancerName, freelancerEmail, freelancerPhone, cvUrl, skills, messageToCompany],
+      (err) => {
+        if (err) {
+          console.error("Error saving application to the database:", err);
+          return res.status(500).json({ message: "Error saving application." });
+        }
+        res.status(200).json({ message: "Successfully applied for the project." });
       }
-      res.status(200).json({ message: "Successfully applied for the project." });
-    }
-  );
+    );
+  } catch (err) {
+    console.error("Error uploading CV to S3:", err);
+    res.status(500).json({ message: "Error uploading CV to S3." });
+  } finally {
+    // Clean up the temporary file stored locally
+    fs.unlinkSync(cvFile.path);
+  }
 });
+
 // Endpoint to get applicants for a specific project
 app.get('/applications/:projectId', (req, res) => {
   const projectId = req.params.projectId;
