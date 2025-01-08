@@ -83,7 +83,7 @@ jobs:
     
 
   destroy:
-    name: Terrraform destroy
+    name: Terrraform destroyy
     runs-on: ubuntu-latest #runner
     if: github.event_name == 'workflow_dispatch'
     
