@@ -73,6 +73,11 @@ const Navbar = () => {
                   Inbox
                 </Button>
               )}
+               {userRole === "freelancer" && (
+                <Button color="inherit" component={Link} to="/inboxf">
+                  Inbox
+                </Button>
+              )}
               <Button color="inherit" onClick={handleLogout}>
                 Logout
               </Button>

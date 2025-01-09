@@ -111,6 +111,14 @@ const ProjectfreelancerDetails = () => {
     }
   };
 
+  const formatDeadline = (deadline) => {
+    return new Intl.DateTimeFormat("de-DE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date(deadline));
+  };
+
   return (
     <Box sx={{ maxWidth: 800, mx: "auto", mt: 4, p: 3, boxShadow: 3, borderRadius: 2 }}>
       {project ? (
@@ -125,7 +133,7 @@ const ProjectfreelancerDetails = () => {
             <strong>Description:</strong> {project.description}
           </Typography>
           <Typography>
-            <strong>Deadline:</strong> {project.deadline}
+            <strong>Deadline:</strong> {formatDeadline(project.deadline)}
           </Typography>
           <Typography>
             <strong>Budget/Hour:</strong> ${project.budget}

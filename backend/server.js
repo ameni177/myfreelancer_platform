@@ -335,15 +335,16 @@ app.post("/inbox/send-message", async (req, res) => {
   const { companyName, freelancerName, projectId, message } = req.body;
 
   try {
-      await db.query(
-          "INSERT INTO inbox (company_name, freelancer_name, project_id, message) VALUES (?, ?, ?, ?)",
-          [companyName, freelancerName, projectId, message]
-      );
+    // Use db.execute for parameterized query
+    await db.execute(
+      "INSERT INTO inbox (company_name, freelancer_name, project_id, message) VALUES (?, ?, ?, ?)",
+      [companyName, freelancerName, projectId, message]
+    );
 
-      res.status(200).json({ success: true, message: "Message sent to company inbox" });
+    res.status(200).json({ success: true, message: "Message sent to company inbox" });
   } catch (err) {
-      console.error("Error sending message to inbox:", err);
-      res.status(500).json({ success: false, error: "Failed to send message to inbox" });
+    console.error("Error sending message to inbox:", err);
+    res.status(500).json({ success: false, error: "Failed to send message to inbox" });
   }
 });
 // GET /inbox/company-messages
@@ -368,6 +369,30 @@ app.get("/inbox/company-messages", (req, res) => {
   });
 });
 
+app.get("/inbox/freelancer-messages", (req, res) => {
+  const { FreelancerName } = req.query; // Ensure consistency in parameter names
+
+  // Check if FreelancerName is provided
+  if (!FreelancerName) {
+    return res.status(400).json({ success: false, message: 'Freelancer Name is required' });
+  }
+
+  const query = "SELECT * FROM inbox WHERE freelancer_name = ? ORDER BY created_at DESC";
+
+  // Execute the query
+  db.execute(query, [FreelancerName], (err, results) => {
+    if (err) {
+      console.error("Error fetching freelancer inbox messages:", err);
+      return res.status(500).json({ success: false, error: "Failed to fetch inbox messages" });
+    }
+
+    if (results.length === 0) {
+      return res.status(200).json({ success: true, messages: [], message: "No messages found" });
+    }
+
+    return res.status(200).json({ success: true, messages: results });
+  });
+});
 
 // Start the server
 app.listen(port, () => {

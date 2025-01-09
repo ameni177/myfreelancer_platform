@@ -11,6 +11,7 @@ import FreelancerDashboard from "./components/FreelancerDashboard";
 import ProjectDetails from "./components/ProjectDetails";
 import ProjectfreelancerDetails from "./components/projectfreelancerdetails";
 import CompanyInbox from "./components/CompanyInbox";
+import FreelancerInbox from "./components/FreelancerInbox";
 const App = () => {
   return (
     <Router>
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/projects/:projectId" element={<ProjectDetails />} />
         <Route path="/project-details/:projectId" element={<ProjectfreelancerDetails />} />
         <Route path="/inbox" element={<CompanyInbox />} />
+        <Route path="/inboxf" element={<FreelancerInbox />} />
 
       </Routes>
     </Router>

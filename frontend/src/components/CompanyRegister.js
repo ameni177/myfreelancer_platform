@@ -118,8 +118,10 @@ const CompanyRegister = () => {
             return;
           }
           const nameAttribute = attributes.find((attr) => attr.Name === "custom:companyName");
+          const emailcAttribute = attributes.find((attr) => attr.Name === "email");
           if (nameAttribute) {
             localStorage.setItem("Name", nameAttribute.Value);
+            localStorage.setItem("Email", emailcAttribute.Value);
           }
           localStorage.setItem("isAuthenticated", "true");
           localStorage.setItem("userRole", "company");

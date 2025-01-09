@@ -20,6 +20,8 @@ const ProjectDetails = () => {
   const [tasks, setTasks] = useState([]);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const companyName = localStorage.getItem("Name") || "Your Company";
+  const compEmail = localStorage.getItem("Email") || "";
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
@@ -31,7 +33,9 @@ const ProjectDetails = () => {
 
   const fetchProjectDetails = async () => {
     try {
-      const response = await axios.get(`http://${backendUrl}:3001/projects/${projectId}`);
+      const response = await axios.get(
+        `http://${backendUrl}:3001/projects/${projectId}`
+      );
       setProject(response.data);
     } catch (err) {
       console.error("Error fetching project details:", err);
@@ -40,7 +44,9 @@ const ProjectDetails = () => {
 
   const fetchApplicants = async () => {
     try {
-      const response = await axios.get(`http://${backendUrl}:3001/applications/${projectId}`);
+      const response = await axios.get(
+        `http://${backendUrl}:3001/applications/${projectId}`
+      );
       setApplicants(response.data);
     } catch (err) {
       console.error("Error fetching applicants:", err);
@@ -49,7 +55,9 @@ const ProjectDetails = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get(`http://${backendUrl}:3001/projects/${projectId}/tasks`);
+      const response = await axios.get(
+        `http://${backendUrl}:3001/projects/${projectId}/tasks`
+      );
       setTasks(response.data);
     } catch (err) {
       console.error("Error fetching tasks:", err);
@@ -60,19 +68,52 @@ const ProjectDetails = () => {
     navigate("/company-dashboard");
   };
 
-  const handleConfirmApplicant = async (applicationId) => {
+  const handleConfirmApplicant = async (applicationId, applicantName) => {
     try {
-      await axios.put(`http://${backendUrl}:3001/applications/confirm/${applicationId}`);
+      await axios.put(
+        `http://${backendUrl}:3001/applications/confirm/${applicationId}`
+      );
       setMessage("Applicant confirmed successfully!");
       fetchApplicants();
     } catch (err) {
       setMessage("Error confirming applicant.");
       console.error("Error confirming applicant:", err);
     }
+
+    try {
+      await axios.post(`http://${backendUrl}:3001/inbox/send-message`, {
+        companyName: compEmail,
+        freelancerName: applicantName,
+        projectId: projectId,
+        message: `Company ${companyName} (${compEmail}) confirmed you for the project: ${project.name}`,
+      });
+    } catch (err) {
+      console.error("Error sending message:", err);
+      setMessage("Error: Unable to send message to the freelancer.");
+    }
+  };
+
+  const FormattedDeadline = ({ deadline }) => {
+    const formattedDate = new Intl.DateTimeFormat("de-DE", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }).format(new Date(deadline));
+
+    return <span>{formattedDate}</span>;
   };
 
   return (
-    <Box sx={{ maxWidth: 800, mx: "auto", mt: 4, p: 3, boxShadow: 3, borderRadius: 2 }}>
+    <Box
+      sx={{
+        maxWidth: 800,
+        mx: "auto",
+        mt: 4,
+        p: 3,
+        boxShadow: 3,
+        borderRadius: 2,
+      }}
+    >
       <Button variant="outlined" onClick={handleBack} sx={{ mb: 2 }}>
         Back to Dashboard
       </Button>
@@ -89,7 +130,8 @@ const ProjectDetails = () => {
             <strong>Description:</strong> {project.description}
           </Typography>
           <Typography variant="body1">
-            <strong>Deadline:</strong> {project.deadline}
+            <strong>Deadline:</strong>{" "}
+            <FormattedDeadline deadline={project.deadline} />
           </Typography>
           <Typography variant="body1">
             <strong>Skills:</strong> {project.skills}
@@ -129,7 +171,8 @@ const ProjectDetails = () => {
                       <strong>Skills:</strong> {applicant.skills}
                     </Typography>
                     <Typography variant="body1">
-                      <strong>Message:</strong> {applicant.message_to_company}
+                      <strong>Message:</strong>{" "}
+                      {applicant.message_to_company}
                     </Typography>
                     <Typography variant="body1">
                       <strong>CV:</strong>{" "}
@@ -150,7 +193,12 @@ const ProjectDetails = () => {
                       <Button
                         variant="contained"
                         color="primary"
-                        onClick={() => handleConfirmApplicant(applicant.id)}
+                        onClick={() =>
+                          handleConfirmApplicant(
+                            applicant.id,
+                            applicant.freelancer_name
+                          )
+                        }
                         sx={{ mt: 1 }}
                       >
                         Confirm Applicant
@@ -185,7 +233,10 @@ const ProjectDetails = () => {
       )}
 
       {message && (
-        <Alert severity={message.includes("Error") ? "error" : "success"} sx={{ mt: 2 }}>
+        <Alert
+          severity={message.includes("Error") ? "error" : "success"}
+          sx={{ mt: 2 }}
+        >
           {message}
         </Alert>
       )}
