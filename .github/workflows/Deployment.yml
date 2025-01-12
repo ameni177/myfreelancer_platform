@@ -4,7 +4,7 @@ on: [push, workflow_dispatch]
 
 jobs:
   apply:
-    name: Terraform applyy
+    name: Terraaform applyy
     runs-on: ubuntu-latest #runner
     if: github.event_name == 'push'
 
