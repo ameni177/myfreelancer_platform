@@ -1,4 +1,4 @@
-name: Deployment Worfkloww
+name: Deployment Worrfkloww
 
 on: [push, workflow_dispatch]
 
