@@ -42,7 +42,7 @@ jobs:
         run: docker push ${{ secrets.DOCKER_USERNAME }}/projectfrontend:latest
 
      # Docker Build and Push for Backend
-      - name: Build Backend Docker Image
+      - name: Build Backend Docker Imagee
         working-directory: ./backend
         run: docker build -t ${{ secrets.DOCKER_USERNAME }}/projectbackend:latest .
 
